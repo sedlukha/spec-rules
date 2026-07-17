@@ -573,9 +573,31 @@ Pick one convention and hold it — drift is what produces duplicate and orphan 
   `[[../Entities/KnowledgeUnit]]`. Set Obsidian's "New link format" to *Shortest
   path when possible*. Path links break when a note moves, clutter the graph, and
   defeat backlink matching. Keep note names unique so short links stay unambiguous.
+  (This is the Obsidian default; for GitHub/Confluence rendering, use relative Markdown
+  links instead — see *Rendering outside Obsidian* below.)
 - **Glossary invariant**: every entity in `Current/Entities/` must have a matching
   term in `02 Glossary.md`. The glossary is the ubiquitous language — an entity that
   is not in it is vocabulary that drifts.
+
+## Rendering outside Obsidian (GitHub, Confluence)
+
+The link rules above default to short-name `[[wikilinks]]`, tuned for Obsidian:
+rename-aware links, graph view, backlinks. But wikilinks do not render in plain Markdown
+viewers (GitHub, Confluence) — they show as literal `[[Note]]` text.
+
+If the vault must also render there, switch to **relative Markdown links**:
+
+- **Body links**: `[Note Name](relative/path/Note%20Name.md)` — URL-encode spaces
+  (`%20`) and `&` (`%26`). These resolve in **both** Obsidian and GitHub.
+- **Frontmatter** `related:` wikilinks never become links in a Markdown renderer — keep
+  them as plain note names.
+- **Mermaid** renders natively on GitHub (fenced `mermaid` code blocks), so diagrams
+  need no change — the diagram-first approach survives the move intact.
+
+Trade-off: you lose Obsidian's automatic link rewrite on rename — moving or renaming a
+note means fixing inbound links by hand (or re-running a wikilink→relative-path
+converter). Pick one link style per vault and hold it; mixing wikilinks and relative
+links is the drift this section exists to prevent.
 
 ## Invariants (machine-checkable)
 
@@ -594,7 +616,9 @@ structurally sound; treat any violation as a defect, not a style preference.
    `Superseded by A` (whole or partial).
 9. No wikilink points to a non-existent note (excluding template placeholders).
 10. No bare `[[ADR-NNN]]` links, and no path links (`[[../Entities/X]]`) — use the
-    short note name.
+    short note name. (In GitHub-rendering mode this flips: relative Markdown links are
+    the required form — see *Rendering outside Obsidian* — but bare `[[ADR-NNN]]` stays
+    forbidden.)
 11. No note with `Status: Superseded` / `Rejected` left in `Current/` without a
     tombstone pointer.
 

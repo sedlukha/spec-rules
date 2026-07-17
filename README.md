@@ -16,7 +16,11 @@ It combines a few well-worn ideas into one operating model:
 
 This is **Obsidian-first**. The value comes from `[[wikilinks]]`, backlinks, graph view,
 properties, and tags. It works in plain Markdown, but you lose most of the payoff.
-If your team is not on Obsidian (or a compatible wikilink tool), this is not for you.
+
+**Also need it on GitHub or Confluence?** Use **relative Markdown links**
+(`[Note Name](path/Note%20Name.md)`) instead of wikilinks — they resolve in both Obsidian
+and those viewers, and Mermaid renders natively on GitHub. The cost is losing Obsidian's
+rename-aware links. See *Rendering outside Obsidian* in `SKILL.md`.
 
 ## What's in here
 
