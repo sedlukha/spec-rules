@@ -37,6 +37,7 @@ skills/spec-rules/
     Open Questions Template.md
     Deferred Questions Template.md
     Screen Template.md
+    Routing Template.md
 ```
 
 ## Use as an Obsidian vault scaffold
