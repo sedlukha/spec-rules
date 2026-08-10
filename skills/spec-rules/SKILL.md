@@ -16,6 +16,7 @@ Instead of one huge file, build a system of linked notes:
 - current architecture;
 - future ideas;
 - user scenarios;
+- screens;
 - entities;
 - diagrams;
 - open questions;
@@ -31,6 +32,7 @@ The docs must answer not only "what are we building?" but also:
 - what is deferred to later;
 - what is no longer current;
 - which user scenarios are supported;
+- which screens exist, and which scenario reaches each one;
 - which entities take part in each scenario;
 - which diagrams explain the current model;
 - what must happen for a future idea to become a current decision.
@@ -88,6 +90,7 @@ domain-specific ones (the last block) with tags that fit your own stack:
 #archive
 #entity
 #scenario
+#screen
 #adr
 #diagram
 #open-question
@@ -163,10 +166,11 @@ tags:
 
 ### 7. Templates
 
-Create and use note templates. This package ships seven in `templates/`:
+Create and use note templates. This package ships eight in `templates/`:
 
 - Entity template;
 - User Scenario template;
+- Screen template;
 - ADR template;
 - Diagram template;
 - Future Candidate template;
@@ -187,6 +191,7 @@ Use MOC (Map of Content) notes. One index per folder, always named with the
 - `00 Architecture Index`
 - `00 Entity Index`
 - `00 Scenario Index`
+- `00 Screen Index`
 - `00 ADR Index`
 - `00 Diagram Index`
 
@@ -266,12 +271,16 @@ Project/
       Data Model.md                     (holds an ER diagram)
       Process Model.md                  (holds a pipeline diagram)
       Lifecycle Model.md                (holds a state diagram)
+      Screen Rules.md                   (rules that cross screens)
 
     Entities/
       00 Entity Index.md
 
     User Scenarios/
       00 User Scenarios Index.md
+
+    Screens/
+      00 Screen Index.md
 
     ADR/
       00 ADR Index.md
@@ -297,6 +306,7 @@ Project/
     Diagram Template.md
     Open Questions Template.md
     Deferred Questions Template.md
+    Screen Template.md
 ```
 
 ## Embed diagrams in architecture files
@@ -326,6 +336,130 @@ Each diagram must have, in the same file:
 - **Backlinks** — Entity → Architecture file with the diagram (no in-between folder)
 - **Updates** — change the architecture → update the diagram in one place
 - **Graph view** — links between components are clearer
+
+## Screens: place, not time
+
+A vault with scenarios needs screen notes as well. The two folders look alike and are
+not alike. Mix them, and the same sentence lands in two notes. One copy then goes
+stale, and the reader has to guess which one is true.
+
+> **A scenario is time. A screen is place.**
+
+| | Scenario | Screen |
+| --- | --- | --- |
+| Question | What does the person do, in what order | What is on this page |
+| Words | Verbs | Nouns |
+| Test word | "then" | "here" |
+| Reach | Crosses screens | One screen |
+
+Wrote "then he presses save"? That is a scenario. Wrote "here is a save button"? That
+is a screen.
+
+### Where a failure sentence goes
+
+Failures are the slippery part, because both notes have a claim on them. Split every
+failure in two.
+
+- The scenario owns **what happened**: the file did not open, the item turns to a
+  failed state, and the queue keeps going.
+- The screen owns **how it looks here**: the tile is dim and reddish, and it carries
+  one remove button.
+
+### A screen note restates no number
+
+Numbers and reasons live in entities and ADRs. The screen note links to them, and it
+never copies the value. Otherwise one number sits in five notes, and four of them go
+wrong.
+
+A mock-up may show a number. Say next to the mock-up that the number is an example.
+
+### Every screen is named by a scenario
+
+Two rules, and they run in both directions.
+
+- Every screen note is named by at least one scenario.
+- Every scenario lists the screens it crosses, under one fixed heading.
+
+A screen that no scenario reaches is dead work, or a missing scenario. Both cases need
+an answer before anyone builds it.
+
+### Never create a placeholder screen note
+
+An empty screen note reads as decided, and that is a lie. A screen gets a note when it
+is thought through. Until then it is one line in the index.
+
+### Rules that cross screens live in one architecture note
+
+A rule that holds everywhere belongs to no single screen. Copy it into each screen note
+and it drifts. Keep it in one architecture note, and let every screen note link there.
+
+Typical residents: the header and the footer, the loading and empty states, the undo
+bar, the accessibility rules, and the interface copy.
+
+### The screen index lists four groups, not one
+
+An index that lists only the finished screens hides the useful part.
+
+| Group | What it holds |
+| --- | --- |
+| Thought through | Screens with their own note |
+| Drawn by somebody else | A third-party form, or a page from a shared library |
+| Deferred | Screens in `Future/`, each with its trigger |
+| Never | Screens that will not exist, each with the reason |
+
+The last group earns its place. "No price screen, because the button already names the
+price" answers the same proposal three times a year.
+
+### One slot with several states beats a new screen
+
+A new state is not a new screen. Draw the slot once, then list its states in a table.
+
+The main action is the common case. Free, priced, running, and paid can share one
+button. Every state you turn into a screen needs its own address, its own back button,
+and its own test.
+
+### Draw the screen with plain characters
+
+A box drawing inside a fenced block renders everywhere, and it needs no image file. It
+also forces the note to name the pieces in order.
+
+```text
+┌──────────────────────────────┐
+│ ←   Screen name              │
+├──────────────────────────────┤
+│    [ the main object ]       │
+├──────────────────────────────┤
+│  Setting   [ value ▾ ]       │
+│  Setting   ━━●━━━  70        │
+├──────────────────────────────┤
+│  [       Main action       ] │
+└──────────────────────────────┘
+```
+
+Keep the drawing small. It shows the order and the weight of the pieces. It is not the
+final design.
+
+### Layouts: same pieces, different container
+
+Write one note per screen, never one note per device. A narrow and a wide layout hold
+the same pieces in a different container.
+
+Say what moves. A row of settings becomes a side column. A grid gets more columns. The
+purpose of the screen never changes with the window.
+
+Pick the layout by window shape, not by device name. A phone held sideways is a wide
+window with almost no height.
+
+### A screen note ends with three lists
+
+| List | What it prevents |
+| --- | --- |
+| What is not here, and why | The control you removed returns next quarter |
+| What goes wrong | The empty, partial, and broken cases stay unwritten |
+| What to check | A tester cannot write cases from the note |
+
+The last list is the point of the whole note. A manager must understand every screen
+note. A tester must be able to write test cases from it.
 
 ## Note templates
 
@@ -396,6 +530,45 @@ The scenario diagram.
 
 ## Open questions
 What still needs deciding.
+```
+
+### Screen note
+
+```text
+# Screen Name
+
+## What this screen is for
+Why the page exists. Whether it is optional. How the person reaches it.
+
+## Why this is a screen
+Only when the answer is not obvious. Why it is not a panel inside another screen.
+
+## Narrow layout
+A small box drawing.
+
+## Wide layout
+Same pieces, different container. What moves, and what never changes.
+
+## Parts
+A table: part, and what it does.
+
+## Rules that hold here
+One short section per rule. Link the entity or the ADR that owns each number.
+
+## What is not here
+A table: what is missing, and why.
+
+## What goes wrong
+A table: case, and what happens.
+
+## What to check
+One line per check. A tester writes cases from this list.
+
+## Related notes
+Links to entities, scenarios, ADRs, and the address note.
+
+## Open questions
+What still needs deciding on this screen.
 ```
 
 ### ADR note
@@ -647,6 +820,8 @@ A good spec lets you answer fast:
 - which entities are deferred;
 - which scenarios are covered;
 - which scenarios are not yet covered;
+- which screens exist, and which scenario names each one;
+- which screens will never exist, and why;
 - which decisions are made;
 - which decisions are candidates;
 - which questions are open, and which of them this cycle answers;
@@ -720,6 +895,11 @@ structurally sound; treat any violation as a defect, not a style preference.
     tombstone pointer.
 12. Every question in `Future/Deferred Questions.md` has a row in the signals table.
 13. No numbered question heading (`Q3`, `Open question 4`) in either questions note.
+14. Every note in `Current/Screens/` is named by at least one scenario, and every
+    scenario lists the screens it crosses.
+15. Every screen note has a parts table and a check list. A note without them is a
+    placeholder.
+16. No screen note holds a number that an entity or an ADR owns.
 
 ## Anti-patterns
 
@@ -730,6 +910,10 @@ Do not:
 - draw diagrams without explanations;
 - define entities without scenarios;
 - write scenarios without links to entities;
+- write the same sentence in a scenario note and in a screen note;
+- create a placeholder screen note for a screen nobody has thought through;
+- copy a cross-screen rule into every screen note;
+- give a state its own screen where one slot with several states would do;
 - leave future ideas without a status or without a concrete trigger;
 - keep every open question in one list, so a release blocker sits next to a question
   nobody will read for a year;
