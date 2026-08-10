@@ -10,7 +10,8 @@ It combines a few well-worn ideas into one operating model:
 - **Domain-Driven Design** — entities + ubiquitous language, never modeled without scenarios.
 - **ADRs** (Architecture Decision Records) — every decision recorded with context and alternatives.
 - **Trigger-driven deferral** — every deferred idea carries the exact signal that means
-  "build it now", so decisions are postponed on purpose, not forgotten.
+  "build it now", so decisions are postponed on purpose, not forgotten. Open questions
+  split by status the same way. A release blocker never hides among the rest.
 
 ## Requirements
 
@@ -33,6 +34,8 @@ skills/spec-rules/
     ADR Template.md
     Diagram Template.md
     Future Candidate Template.md
+    Open Questions Template.md
+    Deferred Questions Template.md
 ```
 
 ## Use as an Obsidian vault scaffold
