@@ -36,6 +36,7 @@ skills/spec-rules/
     Future Candidate Template.md
     Open Questions Template.md
     Deferred Questions Template.md
+    Screen Template.md
 ```
 
 ## Use as an Obsidian vault scaffold
@@ -44,7 +45,7 @@ skills/spec-rules/
 2. Create the status folders `Current/`, `Future/`, `Archive/` and the MOC index notes
    (`00 Home`, `Current Index`, ...). See the recommended vault structure in `SKILL.md`.
 3. Point Obsidian's core **Templates** plugin at your `Templates/` folder.
-4. Start capturing entities, scenarios, and ADRs as linked notes.
+4. Start capturing entities, scenarios, screens, and ADRs as linked notes.
 
 ## Use as an agent skill
 
