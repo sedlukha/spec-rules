@@ -166,7 +166,7 @@ tags:
 
 ### 7. Templates
 
-Create and use note templates. This package ships eight in `templates/`:
+Create and use note templates. This package ships nine in `templates/`:
 
 - Entity template;
 - User Scenario template;
@@ -175,7 +175,8 @@ Create and use note templates. This package ships eight in `templates/`:
 - Diagram template;
 - Future Candidate template;
 - Open Questions template (the current note);
-- Deferred Questions template (the future note).
+- Deferred Questions template (the future note);
+- Routing template (the address note).
 
 Optional, not shipped (add a template file before referencing): Glossary Term,
 Pipeline / Process.
@@ -272,6 +273,7 @@ Project/
       Process Model.md                  (holds a pipeline diagram)
       Lifecycle Model.md                (holds a state diagram)
       Screen Rules.md                   (rules that cross screens)
+      Routing.md                        (holds the address table)
 
     Entities/
       00 Entity Index.md
@@ -307,6 +309,7 @@ Project/
     Open Questions Template.md
     Deferred Questions Template.md
     Screen Template.md
+    Routing Template.md
 ```
 
 ## Embed diagrams in architecture files
@@ -460,6 +463,160 @@ window with almost no height.
 
 The last list is the point of the whole note. A manager must understand every screen
 note. A tester must be able to write test cases from it.
+
+## One note owns the addresses
+
+Screens need addresses, and addresses need one owner. Give the vault a single
+architecture note for them, `Current/Architecture/Routing.md`.
+
+Its scope is narrow on purpose.
+
+| In this note | Somewhere else |
+| --- | --- |
+| The list of addresses | What is on each page, in the screen note |
+| Who decides a redirect | The map of transitions, in the journey note |
+| The back button | Layout, copy, and parts |
+| A cold open by direct link | |
+| The language prefix | |
+
+### Every screen has its own address
+
+A screen without an address cannot be left. The phone back button then closes the
+whole app, and the person's work goes with it.
+
+So the address table and the screen index must match, row for row. A screen with no
+row is a defect in one of the two notes.
+
+### The test question: does it cover the work?
+
+Not everything that opens on top is a screen.
+
+> **Does it cover the whole working area?**
+
+Yes means a screen, and a screen needs an address. No means a part of the screen
+underneath, and it gets no address.
+
+Ask this before you write either note. The answer moves panels into screens, and
+screens back into panels.
+
+### The address names the object, not "the current one"
+
+An address that means "the project I opened last" points at different data on
+different days. The bookmark then lies, and a second tab lies as well.
+
+| Rule | Why |
+| --- | --- |
+| Put the object id in the address, even while there is only one object | Then nothing has to move when the second one arrives |
+| Use the object's own id, never its position in a list | Deleting a neighbour would change every address |
+| Make the id random, not sequential | A neighbouring number must not reach somebody else's work |
+
+An example shape: `/p/<project>`, `/p/<project>/item/<item>`, `/p/<project>/export`.
+
+### Who decides a redirect: the server or the client
+
+This is the hardest part of the note, and the answer depends on one thing. Where does
+the data live?
+
+Data on the server means the server decides. Data in the browser means the server
+knows nothing about it, so the client decides.
+
+A returning person must not see the wrong page, not even for one frame. So the
+decision has to happen before the first paint. A small hint, such as a cookie with
+the last object id, lets the server route without reading the work itself.
+
+**The hint holds an id and nothing else.** No name, no address, no file.
+
+#### The redirect loop, and the rule that prevents it
+
+The hint and the work live in two places, so they can die apart. A browser clears the
+storage of a rarely used site on its own. Then the hint says "go to the project", and
+the browser says "there is no project".
+
+> **Found no work at the address? Clear the hint first, then send the person home.**
+
+Without this rule the two sides bounce for ever, and the site stops opening at all.
+Write the rule down, because the code will be written by somebody who never saw the
+loop.
+
+### The back button is a step in history
+
+> **The arrow in the header is one step back in history, not a fixed link.**
+
+A screen reached from two places then returns to the right one, and it needs no second
+address.
+
+| Pressed back on | Lands on |
+| --- | --- |
+| Item editor | The workspace, at that item |
+| Export | Wherever the person came from |
+
+**There may be no history at all.** A bookmark or a reload leaves nothing to go back
+to. Name the fallback for every such screen, or the arrow throws the person off the
+site.
+
+### A cold open needs a row for every address
+
+Any address can open from nothing: a bookmark, a reload, a link one year old. The
+object may be gone.
+
+| Opened | What shows | Who decides |
+| --- | --- | --- |
+| A live object | Its screen | — |
+| A deleted object | Home, and the address in the bar is replaced | Server |
+| An object from another device | Home. The hint is cleared first | Client |
+| A deleted child object | The parent screen | Client |
+
+**Replace the address in the bar.** Otherwise a reload repeats the miss, and the back
+button returns to the same dead address.
+
+A person's own stale link needs no error page. They did not type it, and their work
+waits one step away. A made-up address is a different case, and it gets the shared
+not-found page.
+
+### What lives without an address
+
+| What | Why |
+| --- | --- |
+| A panel that leaves the work visible | It hides nothing |
+| A menu in the header | It opened and closed. Nobody returns to it |
+| A confirm dialog | The answer is needed now |
+| A short undo bar | It lives for about ten seconds |
+
+**A third-party overlay is the tricky one.** A payment form drawn by somebody else has
+no address, because the screen under it did not change. But the phone back button must
+close the form, not the page. So opening it adds one history entry, and closing it
+takes that entry away.
+
+A history entry is not an address. The bar does not change, and the link cannot reopen
+the form.
+
+### Names you do not take
+
+A shared library may bring its own pages later: sign-in, settings, a public profile.
+Leave those names free from the first day. Then the library arrives, and no address of
+yours has to move.
+
+### The language prefix
+
+Decide the shape now, even with one language. Give every extra language a prefix, and
+give the main one no prefix. Every address in the table then stays valid when the
+second language lands.
+
+### A client-only flag stays client-only
+
+A query flag that only the browser reads must never be read on the server. Read it
+there, and the page loses its pre-render for everybody. The cost falls on every
+visitor, for a flag that is off in production.
+
+### End the note with a check list
+
+The address note is testable, so give the tester lines to run.
+
+- Every address opens from a bookmark, and shows the right page.
+- The back button lands where the table says, on every screen.
+- A cold open of a deleted object replaces the address in the bar.
+- Clearing the browser storage while the hint stays does not loop.
+- A made-up address shows the not-found page.
 
 ## Note templates
 
@@ -662,6 +819,44 @@ What is already decided, and which data already exists.
 and name what stands in place of the answer.
 ```
 
+### Routing note
+
+One architecture note, and it owns every address.
+
+```text
+# Addresses
+
+## Scope
+What this note owns, and what lives in the screen and journey notes.
+
+## The rules the rest follows
+Every screen has an address. The address names the object, not "the current one".
+
+## The test question
+Does it cover the whole working area? Yes means a screen, so it needs an address.
+
+## The address table
+A table: screen, and address. One row per screen, and no row without a screen.
+
+## Who decides a redirect
+The server or the client, and why. The hint, and the rule that clears it first.
+
+## The back button
+A table: pressed back on, and lands on. Plus the fallback when history is empty.
+
+## A cold open
+A table: address opened from nothing, what shows, and who decides.
+
+## What lives without an address
+A table: panels, menus, dialogs, and a third-party overlay.
+
+## Reserved names and the language prefix
+Names a shared library will want later. The prefix shape for a second language.
+
+## What to check
+One line per check, all of them testable from a bookmark.
+```
+
 ### Diagram inside an architecture file
 
 Embed the diagram in an architecture file (e.g. `Data Model.md`), not a separate file.
@@ -822,6 +1017,7 @@ A good spec lets you answer fast:
 - which scenarios are not yet covered;
 - which screens exist, and which scenario names each one;
 - which screens will never exist, and why;
+- which address opens which screen, and who decides a redirect;
 - which decisions are made;
 - which decisions are candidates;
 - which questions are open, and which of them this cycle answers;
@@ -900,6 +1096,9 @@ structurally sound; treat any violation as a defect, not a style preference.
 15. Every screen note has a parts table and a check list. A note without them is a
     placeholder.
 16. No screen note holds a number that an entity or an ADR owns.
+17. Every screen note has a row in the address table, and every row in that table
+    names a screen note.
+18. No two screens share one address.
 
 ## Anti-patterns
 
@@ -914,6 +1113,9 @@ Do not:
 - create a placeholder screen note for a screen nobody has thought through;
 - copy a cross-screen rule into every screen note;
 - give a state its own screen where one slot with several states would do;
+- give two screens one address, or a screen no address at all;
+- write an address that means "the object opened last";
+- keep a routing hint that can outlive the work it points at;
 - leave future ideas without a status or without a concrete trigger;
 - keep every open question in one list, so a release blocker sits next to a question
   nobody will read for a year;
