@@ -163,16 +163,18 @@ tags:
 
 ### 7. Templates
 
-Create and use note templates. This package ships five in `templates/`:
+Create and use note templates. This package ships seven in `templates/`:
 
 - Entity template;
 - User Scenario template;
 - ADR template;
 - Diagram template;
-- Future Candidate template.
+- Future Candidate template;
+- Open Questions template (the current note);
+- Deferred Questions template (the future note).
 
-Optional, not shipped (add a template file before referencing): Open Question,
-Glossary Term, Pipeline / Process.
+Optional, not shipped (add a template file before referencing): Glossary Term,
+Pipeline / Process.
 
 ### 8. Index / MOC notes
 
@@ -187,7 +189,6 @@ Use MOC (Map of Content) notes. One index per folder, always named with the
 - `00 Scenario Index`
 - `00 ADR Index`
 - `00 Diagram Index`
-- `00 Open Questions Index`
 
 Exactly one index file per folder. A second index (e.g. an empty `ADR Index.md`
 next to `00 ADR Index.md`) is a defect — see [Invariants](#invariants-machine-checkable).
@@ -209,6 +210,9 @@ Archive/
 - `Archive` — outdated, rejected, or superseded material.
 
 Do not mix live architecture and future ideas in one layer without a clear status.
+
+Open questions carry a status too, so they split the same way. See
+[Open questions: two notes, not one list](#open-questions-two-notes-not-one-list).
 
 **Archive trigger and tombstones.** A note moves to `Archive` when one of these is true:
 
@@ -250,10 +254,10 @@ Project/
   00 Home.md
   01 Product Vision.md
   02 Glossary.md
-  03 Open Questions.md
 
   Current/
     00 Current Index.md
+    Open Questions.md                 (questions this cycle answers)
 
     Architecture/
       00 Architecture Index.md
@@ -274,6 +278,7 @@ Project/
 
   Future/
     00 Future Index.md
+    Deferred Questions.md             (questions whose answer comes later)
 
     Architecture Ideas/
     Entity Candidates/
@@ -290,6 +295,8 @@ Project/
     ADR Template.md
     Future Candidate Template.md
     Diagram Template.md
+    Open Questions Template.md
+    Deferred Questions Template.md
 ```
 
 ## Embed diagrams in architecture files
@@ -457,6 +464,31 @@ What to change when moving it to Current.
 Links to current entities, scenarios, ADRs.
 ```
 
+### Open questions note
+
+Two notes share one shape. `Current/Open Questions.md` holds the questions this cycle
+answers. `Future/Deferred Questions.md` holds the rest, and it adds a signals table at
+the top.
+
+```text
+# Open Questions
+
+Only questions with no answer yet.
+A solved question is deleted whole, because the answer lives in the decision note.
+
+## Signals                          (deferred note only)
+One row per question: the exact signal that brings the answer.
+
+## The question, written as a question
+
+What is already decided, and which data already exists.
+
+**Question.** The one thing nobody knows yet.
+
+**Delays.** What waits for the answer. Write "Nothing" when nothing waits,
+and name what stands in place of the answer.
+```
+
 ### Diagram inside an architecture file
 
 Embed the diagram in an architecture file (e.g. `Data Model.md`), not a separate file.
@@ -511,6 +543,70 @@ When you accept an idea:
 5. Update scenario notes.
 6. Archive old versions if they are no longer current (leave a tombstone, see Status separation).
 
+## Open questions: two notes, not one list
+
+An open question has a status, exactly like an entity or an idea. So open questions
+live in two notes:
+
+- `Current/Open Questions.md` — questions this cycle answers;
+- `Future/Deferred Questions.md` — questions whose answer comes later.
+
+One shared list looks tidy and reads badly. A release blocker sits next to a question
+nobody will read for a year. The reader cannot tell them apart. The page then grows
+into a wall of text, and people stop using it.
+
+### The sorting test is not "does it block?"
+
+On a mature vault almost no question blocks work. The spec already has something in
+place of every missing answer. A calculated number, a rough number, or a rule that
+holds anyway. Sort by "does it block?" and nearly every question ends in one group.
+
+Ask this instead: **will anyone work on this question before the release?** Two
+reasons move a question to the deferred note.
+
+1. The answer only arrives after the release. It needs real users, real hardware, or
+   a complaint from a real person.
+2. The question is not about the current scope at all.
+
+A question that blocks work stays in the current note. Name the block in the question
+itself, so nobody has to guess.
+
+### Every question says what it delays
+
+Every question ends with one line: what waits for the answer. Write `Nothing` when
+nothing waits, and name what stands in place of the answer.
+
+Do not keep a separate list of delayed work, and do not count the questions. A second
+list always drifts from the first one.
+
+### Every deferred question names its signal
+
+The `Future/` folder asks every idea for a trigger. A deferred question owes the same
+thing: the exact signal that brings the answer. Keep the signals in one table at the
+top of the note, one row per question.
+
+A deferred question without a signal is a question nobody reopens.
+
+### Moving a question is not answering it
+
+Move the section as it is. A move changes the status, not the content. If the text
+needs a rewrite, that is a separate edit with its own reason.
+
+**A solved question is deleted from either note, not ticked.** The answer belongs in
+the decision note. A page of ticked questions is an archive, and people stop searching
+in it.
+
+### Give a question no number
+
+`Open question 4` breaks the day question 3 gets an answer. Link a question by its own
+words instead. Then deleting one question breaks no reference to another.
+
+### Splitting an existing list costs one link sweep
+
+Every inbound link to the old page points at one question inside it, not at the page.
+So the split means visiting each link and sending it to the right note. Count those
+links before you start, and check every link again afterwards.
+
 ## Supersession and partial supersession
 
 A binary `Superseded` status is not enough. On a real vault, a new decision often
@@ -553,7 +649,8 @@ A good spec lets you answer fast:
 - which scenarios are not yet covered;
 - which decisions are made;
 - which decisions are candidates;
-- which questions are open;
+- which questions are open, and which of them this cycle answers;
+- which deferred question waits for which signal;
 - which diagrams explain the system;
 - which future ideas have a clear trigger;
 - what to change for the next stage.
@@ -621,6 +718,8 @@ structurally sound; treat any violation as a defect, not a style preference.
     forbidden.)
 11. No note with `Status: Superseded` / `Rejected` left in `Current/` without a
     tombstone pointer.
+12. Every question in `Future/Deferred Questions.md` has a row in the signals table.
+13. No numbered question heading (`Q3`, `Open question 4`) in either questions note.
 
 ## Anti-patterns
 
@@ -632,6 +731,10 @@ Do not:
 - define entities without scenarios;
 - write scenarios without links to entities;
 - leave future ideas without a status or without a concrete trigger;
+- keep every open question in one list, so a release blocker sits next to a question
+  nobody will read for a year;
+- leave a deferred question without the signal that will answer it;
+- mark a question solved with a tick instead of deleting it;
 - make architecture decisions without an ADR;
 - supersede an ADR with a one-directional pointer (new note only, old note untouched);
 - leave a superseded note in `Current` reading as live truth;
