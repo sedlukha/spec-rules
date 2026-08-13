@@ -5,6 +5,7 @@ tags:
   - diagram
   - current
 related: []
+summary: "What the diagram shows, and the one thing to read from it"
 ---
 
 # Diagram Title

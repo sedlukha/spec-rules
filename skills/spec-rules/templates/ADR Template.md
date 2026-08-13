@@ -7,6 +7,7 @@ tags:
   - adr
   - decision
 related: []
+summary: "What the decision changes, and the two options it rejected"
 ---
 
 <!-- If superseded, pin a banner here, above the title:

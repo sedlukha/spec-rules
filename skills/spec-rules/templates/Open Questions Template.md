@@ -4,6 +4,7 @@ status: current
 tags:
   - current
   - open-question
+summary: "Questions we answer before the release. The register, not a note"
 ---
 
 # Open Questions

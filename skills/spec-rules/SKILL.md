@@ -146,6 +146,7 @@ tags:
 related:
   - "[[Customer]]"
   - "[[Invoice]]"
+summary: "Order: what it holds, how it is versioned, who may change it"
 ---
 ```
 
@@ -161,8 +162,36 @@ tags:
   - future
   - entity-candidate
   - stage-2-candidate
+summary: "Tax metadata per region. Waits for the second market"
 ---
 ```
+
+**Every note carries a `summary` line.** It says in one line what is inside the
+note.
+
+A title is too short to choose by. `Order` does not tell you whether the note
+holds the fields, the states, or the money rules. The first paragraph is too long
+to scan across fifty notes. The summary sits between them.
+
+It is the only field written for a reader who has not opened the file yet.
+
+Rules for a summary:
+
+- One line. Say what is inside, not why it matters.
+- Twenty words at most. A longer one stops being a summary.
+- Name the topics a reader would search for.
+- Write it in the language of the notes, not always in English.
+
+Two examples, one weak and one useful:
+
+```yaml
+summary: "This note is about the order entity"        # says nothing new
+summary: "Order: fields, states, and who may change a paid one"
+```
+
+A summary earns its keep when a script collects every line into one file. The
+reader then picks the right note from one page. Without that page a reader still
+gets a one-line answer to "what is in here?" at the top of every note.
 
 ### 7. Templates
 
@@ -1074,31 +1103,32 @@ structurally sound; treat any violation as a defect, not a style preference.
 
 1. Exactly one `00 ` index note per folder; no second/empty index file.
 2. No empty (0-byte) notes.
-3. Every entity in `Current/Entities/` is referenced by at least one scenario.
-4. Every scenario links to at least one entity.
-5. Every entity in `Current/Entities/` has a term in `02 Glossary.md`.
-6. Every note in `Future/` has a non-empty `## Trigger` and links to at least one
+3. Every note has a non-empty `summary` of twenty words or fewer.
+4. Every entity in `Current/Entities/` is referenced by at least one scenario.
+5. Every scenario links to at least one entity.
+6. Every entity in `Current/Entities/` has a term in `02 Glossary.md`.
+7. Every note in `Future/` has a non-empty `## Trigger` and links to at least one
    note in `Current/`.
-7. Every ADR has all required sections, including `Revisit trigger` and `Supersession`.
-8. Supersession is bidirectional: if ADR-A says `Supersedes B`, then B says
+8. Every ADR has all required sections, including `Revisit trigger` and `Supersession`.
+9. Supersession is bidirectional: if ADR-A says `Supersedes B`, then B says
    `Superseded by A` (whole or partial).
-9. No wikilink points to a non-existent note (excluding template placeholders).
-10. No bare `[[ADR-NNN]]` links, and no path links (`[[../Entities/X]]`) — use the
+10. No wikilink points to a non-existent note (excluding template placeholders).
+11. No bare `[[ADR-NNN]]` links, and no path links (`[[../Entities/X]]`) — use the
     short note name. (In GitHub-rendering mode this flips: relative Markdown links are
     the required form — see *Rendering outside Obsidian* — but bare `[[ADR-NNN]]` stays
     forbidden.)
-11. No note with `Status: Superseded` / `Rejected` left in `Current/` without a
+12. No note with `Status: Superseded` / `Rejected` left in `Current/` without a
     tombstone pointer.
-12. Every question in `Future/Deferred Questions.md` has a row in the signals table.
-13. No numbered question heading (`Q3`, `Open question 4`) in either questions note.
-14. Every note in `Current/Screens/` is named by at least one scenario, and every
+13. Every question in `Future/Deferred Questions.md` has a row in the signals table.
+14. No numbered question heading (`Q3`, `Open question 4`) in either questions note.
+15. Every note in `Current/Screens/` is named by at least one scenario, and every
     scenario lists the screens it crosses.
-15. Every screen note has a parts table and a check list. A note without them is a
+16. Every screen note has a parts table and a check list. A note without them is a
     placeholder.
-16. No screen note holds a number that an entity or an ADR owns.
-17. Every screen note has a row in the address table, and every row in that table
+17. No screen note holds a number that an entity or an ADR owns.
+18. Every screen note has a row in the address table, and every row in that table
     names a screen note.
-18. No two screens share one address.
+19. No two screens share one address.
 
 ## Anti-patterns
 

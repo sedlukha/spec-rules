@@ -7,6 +7,7 @@ tags:
   - current
   - stage-1
 related: []
+summary: "What stands on this screen, in both layouts"
 ---
 
 # Screen Name
