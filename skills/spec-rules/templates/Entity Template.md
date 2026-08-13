@@ -7,6 +7,7 @@ tags:
   - current
   - stage-1
 related: []
+summary: "The entity: what it holds, what it links to, what it cannot do"
 ---
 
 # Entity Name

@@ -8,6 +8,7 @@ tags:
   - entity-candidate
   - stage-2-candidate
 related: []
+summary: "The idea, and the signal that turns it into a decision"
 ---
 
 # Future Candidate Name

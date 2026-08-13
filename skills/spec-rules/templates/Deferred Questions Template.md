@@ -5,6 +5,7 @@ likely_stage: stage-2
 tags:
   - future
   - open-question
+summary: "Questions whose answer arrives after launch. The register, not a note"
 ---
 
 # Deferred Questions

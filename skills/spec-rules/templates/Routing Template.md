@@ -6,6 +6,7 @@ tags:
   - current
   - stage-1
 related: []
+summary: "Every address, who decides a move, and how back behaves"
 ---
 
 # Addresses
