@@ -37,6 +37,16 @@ The docs must answer not only "what are we building?" but also:
 - which diagrams explain the current model;
 - what must happen for a future idea to become a current decision.
 
+## A section is the unit of reading
+
+A note owns a topic, but nobody reads a whole note to answer one question. So find
+the heading first (`grep -n "^## "`), then read that range. One session read three
+long notes end to end for two sections, and paid about 15k tokens for the rest.
+
+This is a rule for writing a note too. Give every section a heading that names what
+it holds, and keep the section true on its own. A section that only makes sense
+after the ten above it forces the reader to take the whole file.
+
 ## Use the full power of Obsidian
 
 Use everything Obsidian offers. Do not treat it as a plain folder of Markdown files.
