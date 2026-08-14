@@ -10,7 +10,7 @@ summary: "Questions we answer before the release. The register, not a note"
 # Open Questions
 
 Only questions this cycle answers. A question whose answer comes later lives in
-[[Deferred Questions]].
+[Deferred questions](../future/deferred-questions.md).
 
 Every question says what it delays. There is no second list of delayed work and no
 count of questions, because a second list always drifts from the first one.
@@ -33,4 +33,4 @@ what stands in place of the answer.
 
 ## Related notes
 
-Links to [[00 Home]], the ADR index, and [[Deferred Questions]].
+Links to [Home](../00-home.md), the ADR index, and [Deferred questions](../future/deferred-questions.md).

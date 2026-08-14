@@ -47,13 +47,59 @@ This is a rule for writing a note too. Give every section a heading that names w
 it holds, and keep the section true on its own. A section that only makes sense
 after the ten above it forces the reader to take the whole file.
 
+## Pick the vault mode first
+
+The same notes can be stored in two shapes. Pick one before you write the first
+note. Write the choice in an ADR, and hold it. A vault that mixes the two is the
+drift half the rules below exist to prevent.
+
+**Repo mode is the default.** The vault lives in a git repo, and people read it
+on the forge as well: GitHub, GitLab, a pull request. Most vaults are this one.
+
+**Obsidian mode** is for a vault that lives in Obsidian and nowhere else.
+
+| | Repo mode (default) | Obsidian mode |
+| --- | --- | --- |
+| Folders | `user-scenarios/` | `User Scenarios/` |
+| Notes | `core-flow.md` | `Core Flow.md` |
+| Index note | `00-adr-index.md` | `00 ADR Index.md` |
+| ADR files | `adr-024-short-title.md` | `ADR-024 Short Title.md` |
+| Body links | `[ADR-024 …](../adr/adr-024-short-title.md)` | `[[ADR-024 Short Title]]` |
+
+Nothing else changes. The folders, the note types, the required sections, the
+supersession rules and the invariants are the same in both modes.
+
+Three reasons repo mode is the default:
+
+1. A forge shows a wikilink as plain `[[text]]`. Every such link is dead for a
+   reader who is not in Obsidian.
+2. A name with a space needs `%20` in every link that points at it.
+3. Many repos require kebab-case for every file. A vault in Title Case then
+   breaks a repo rule, and a repo rule rarely bends for one folder.
+
+What repo mode costs: Obsidian rewrites a `[[wikilink]]` for you when a note is
+renamed. Do not assume the same for a relative link. Check the inbound links
+after every rename, whatever your editor promises.
+
+**Every example below is written in repo mode.** Read the table to get the
+Obsidian form.
+
 ## Use the full power of Obsidian
 
 Use everything Obsidian offers. Do not treat it as a plain folder of Markdown files.
 
 ### 1. Internal links
 
-Link notes with Obsidian links:
+Link notes to each other. In repo mode a link is a relative Markdown link:
+
+```text
+[Order](../entities/order.md)
+[Customer](../entities/customer.md)
+[Complete checkout](../user-scenarios/complete-checkout.md)
+[ADR-003 Order versioning](../adr/adr-003-order-versioning.md)
+```
+
+In Obsidian mode the same links are short-name wikilinks:
 
 ```text
 [[Order]]
@@ -154,8 +200,8 @@ tags:
   - current
   - stage-1
 related:
-  - "[[Customer]]"
-  - "[[Invoice]]"
+  - customer
+  - invoice
 summary: "Order: what it holds, how it is versioned, who may change it"
 ---
 ```
@@ -207,15 +253,15 @@ gets a one-line answer to "what is in here?" at the top of every note.
 
 Create and use note templates. This package ships nine in `templates/`:
 
-- Entity template;
-- User Scenario template;
-- Screen template;
-- ADR template;
-- Diagram template;
-- Future Candidate template;
-- Open Questions template (the current note);
-- Deferred Questions template (the future note);
-- Routing template (the address note).
+- `entity-template.md`;
+- `scenario-template.md`;
+- `screen-template.md`;
+- `adr-template.md`;
+- `diagram-template.md`;
+- `future-candidate-template.md`;
+- `open-questions-template.md` (the current note);
+- `deferred-questions-template.md` (the future note);
+- `routing-template.md` (the address note).
 
 Optional, not shipped (add a template file before referencing): Glossary Term,
 Pipeline / Process.
@@ -223,20 +269,23 @@ Pipeline / Process.
 ### 8. Index / MOC notes
 
 Use MOC (Map of Content) notes. One index per folder, always named with the
-`00 ` prefix so it sorts to the top and there is exactly one index per folder:
+`00-` prefix so it sorts to the top:
 
-- `00 Home`
-- `00 Current Index`
-- `00 Future Index`
-- `00 Architecture Index`
-- `00 Entity Index`
-- `00 Scenario Index`
-- `00 Screen Index`
-- `00 ADR Index`
-- `00 Diagram Index`
+- `00-home.md`
+- `00-current-index.md`
+- `00-future-index.md`
+- `00-architecture-index.md`
+- `00-entity-index.md`
+- `00-scenario-index.md`
+- `00-screen-index.md`
+- `00-adr-index.md`
+- `00-diagram-index.md`
 
-Exactly one index file per folder. A second index (e.g. an empty `ADR Index.md`
-next to `00 ADR Index.md`) is a defect — see [Invariants](#invariants-machine-checkable).
+(In Obsidian mode the prefix is `00 ` with a space: `00 ADR Index.md`.)
+
+Exactly one index file per folder, and `templates/` is the only folder without
+one. A second index, such as an empty `adr-index.md` next to `00-adr-index.md`,
+is a defect — see [Invariants](#invariants-machine-checkable).
 
 Indexes must be navigation hubs, not just file lists.
 
@@ -245,35 +294,35 @@ Indexes must be navigation hubs, not just file lists.
 Split docs by status:
 
 ```text
-Current/
-Future/
-Archive/
+current/
+future/
+archive/
 ```
 
-- `Current` — the live spec;
-- `Future` — ideas, candidates, Stage 2+ guesses;
-- `Archive` — outdated, rejected, or superseded material.
+- `current/` — the live spec;
+- `future/` — ideas, candidates, Stage 2+ guesses;
+- `archive/` — outdated, rejected, or superseded material.
 
 Do not mix live architecture and future ideas in one layer without a clear status.
 
 Open questions carry a status too, so they split the same way. See
 [Open questions: two notes, not one list](#open-questions-two-notes-not-one-list).
 
-**Archive trigger and tombstones.** A note moves to `Archive` when one of these is true:
+**Archive trigger and tombstones.** A note moves to `archive/` when one of these is true:
 
 - its ADR Status becomes `Superseded` or `Rejected`;
-- its entity/scenario is fully replaced and nothing in `Current` links to it as live.
+- its entity/scenario is fully replaced and nothing in `current/` links to it as live.
 
 When you archive a note, do **not** delete it silently. Leave a one-line **tombstone**
 in place of the old content (or at the top of the archived file) that points to the
 replacement, so backlinks and graph paths still resolve:
 
 ```text
-> Archived 2026-06-23. Superseded by [[ADR-024 Plan stored as topic_folders subtree]].
+> Archived 2026-06-23. Superseded by [ADR-024 Plan stored as a subtree](../current/adr/adr-024-plan-stored-as-a-subtree.md).
 ```
 
 Archiving is a deliberate step, not a cleanup you skip. If superseded material stays in
-`Current`, it reads as live truth and misleads the next reader (this is the most common
+`current/`, it reads as live truth and misleads the next reader (this is the most common
 decay mode of a large vault).
 
 ### 10. Progressive refinement
@@ -294,73 +343,87 @@ Every idea must have a clear status.
 
 ## Recommended vault structure
 
+Every folder below holds its own index note. `templates/` is the one exception:
+it holds blank forms, and an index of blank forms helps nobody.
+
 ```text
-Project/
-  00 Home.md
-  01 Product Vision.md
-  02 Glossary.md
+project/
+  00-home.md
+  01-product-vision.md
+  02-glossary.md
 
-  Current/
-    00 Current Index.md
-    Open Questions.md                 (questions this cycle answers)
+  current/
+    00-current-index.md
+    open-questions.md                 (questions this cycle answers)
 
-    Architecture/
-      00 Architecture Index.md
-      Core Flow.md                      (holds a flow diagram)
-      Core Domain Model.md
-      Data Model.md                     (holds an ER diagram)
-      Process Model.md                  (holds a pipeline diagram)
-      Lifecycle Model.md                (holds a state diagram)
-      Screen Rules.md                   (rules that cross screens)
-      Routing.md                        (holds the address table)
+    architecture/
+      00-architecture-index.md
+      core-flow.md                      (holds a flow diagram)
+      core-domain-model.md
+      data-model.md                     (holds an ER diagram)
+      process-model.md                  (holds a pipeline diagram)
+      lifecycle-model.md                (holds a state diagram)
+      screen-rules.md                   (rules that cross screens)
+      routing.md                        (holds the address table)
 
-    Entities/
-      00 Entity Index.md
+    entities/
+      00-entity-index.md
 
-    User Scenarios/
-      00 User Scenarios Index.md
+    user-scenarios/
+      00-user-scenarios-index.md
 
-    Screens/
-      00 Screen Index.md
+    screens/
+      00-screen-index.md
 
-    ADR/
-      00 ADR Index.md
+    adr/
+      00-adr-index.md
 
-  Future/
-    00 Future Index.md
-    Deferred Questions.md             (questions whose answer comes later)
+  future/
+    00-future-index.md
+    deferred-questions.md             (questions whose answer comes later)
 
-    Architecture Ideas/
-    Entity Candidates/
-    User Scenarios/
-    ADR Candidates/
+    architecture-ideas/
+      00-architecture-ideas-index.md
+    entity-candidates/
+      00-entity-candidates-index.md
+    user-scenarios/
+      00-future-scenarios-index.md
+    adr-candidates/
+      00-adr-candidates-index.md
 
-  Archive/
-    Superseded Ideas/
-    Old Drafts/
+  archive/
+    00-archive-index.md
+    superseded-ideas/
+      00-superseded-ideas-index.md
+    old-drafts/
+      00-old-drafts-index.md
 
-  Templates/
-    Entity Template.md
-    Scenario Template.md
-    ADR Template.md
-    Future Candidate Template.md
-    Diagram Template.md
-    Open Questions Template.md
-    Deferred Questions Template.md
-    Screen Template.md
-    Routing Template.md
+  templates/
+    entity-template.md
+    scenario-template.md
+    adr-template.md
+    future-candidate-template.md
+    diagram-template.md
+    open-questions-template.md
+    deferred-questions-template.md
+    screen-template.md
+    routing-template.md
 ```
+
+Start flat. A vault with four future ideas needs `future/` and its index, not
+four subfolders with four more indexes. Split a folder when it stops being
+readable in one screen, and give the new folder its index in the same edit.
 
 ## Embed diagrams in architecture files
 
-**Do not create a separate `Diagrams/` folder.**
+**Do not create a separate `diagrams/` folder.**
 
 Embed each diagram in the file it explains:
 
-- **ER Diagram** → embed in `Data Model.md` (with tables and rules explained)
-- **Workflow/Process diagrams** → embed in `Process Model.md` or `Core Flow.md`
-- **State diagrams** → embed in `Lifecycle Model.md`
-- **Architecture diagrams** → embed in the matching `Architecture/*.md`
+- **ER Diagram** → embed in `data-model.md` (with tables and rules explained)
+- **Workflow/Process diagrams** → embed in `process-model.md` or `core-flow.md`
+- **State diagrams** → embed in `lifecycle-model.md`
+- **Architecture diagrams** → embed in the matching `architecture/*.md`
 
 Each diagram must have, in the same file:
 
@@ -446,7 +509,7 @@ An index that lists only the finished screens hides the useful part.
 | --- | --- |
 | Thought through | Screens with their own note |
 | Drawn by somebody else | A third-party form, or a page from a shared library |
-| Deferred | Screens in `Future/`, each with its trigger |
+| Deferred | Screens in `future/`, each with its trigger |
 | Never | Screens that will not exist, each with the reason |
 
 The last group earns its place. "No price screen, because the button already names the
@@ -506,7 +569,7 @@ note. A tester must be able to write test cases from it.
 ## One note owns the addresses
 
 Screens need addresses, and addresses need one owner. Give the vault a single
-architecture note for them, `Current/Architecture/Routing.md`.
+architecture note for them, `current/architecture/routing.md`.
 
 Its scope is narrow on purpose.
 
@@ -774,7 +837,7 @@ What still needs deciding on this screen.
 
 > ⚠️ Banner (only if superseded). Pin a one-liner at the very top so the reader
 > sees it before the body:
-> "Partially superseded by [[ADR-024 ...]] — storage model only; the decision below still holds."
+> "Partially superseded by [ADR-024 …](adr-024-plan-stored-as-a-subtree.md). Storage model only. The decision below still holds."
 
 ## Status
 Proposed / Accepted / Accepted (partially superseded) / Superseded / Rejected.
@@ -796,8 +859,9 @@ When to review the decision.
 
 ## Supersession
 - Supersedes: links to ADRs this one replaces (whole or in part).
-- Superseded by: links to ADRs that replace this one, with WHICH PART
-  (e.g. "[[ADR-024]] — physical storage; semantic independence still holds").
+- Superseded by: links to ADRs that replace this one, with WHICH PART. Example:
+  "[ADR-024 …](adr-024-plan-stored-as-a-subtree.md) replaces the storage model.
+  Semantic independence still holds."
 
 ## Related notes
 Links to entities, scenarios, diagrams.
@@ -835,8 +899,8 @@ Links to current entities, scenarios, ADRs.
 
 ### Open questions note
 
-Two notes share one shape. `Current/Open Questions.md` holds the questions this cycle
-answers. `Future/Deferred Questions.md` holds the rest, and it adds a signals table at
+Two notes share one shape. `current/open-questions.md` holds the questions this cycle
+answers. `future/deferred-questions.md` holds the rest, and it adds a signals table at
 the top.
 
 ```text
@@ -898,7 +962,7 @@ One line per check, all of them testable from a bookmark.
 
 ### Diagram inside an architecture file
 
-Embed the diagram in an architecture file (e.g. `Data Model.md`), not a separate file.
+Embed the diagram in an architecture file (e.g. `data-model.md`), not a separate file.
 
 Structure:
 
@@ -935,7 +999,7 @@ Links to entities, scenarios, ADRs.
 
 When you add a new idea:
 
-1. Do not put it straight into `Current`.
+1. Do not put it straight into `current/`.
 2. Create a future candidate.
 3. Set a trigger.
 4. Link it to current entities and scenarios.
@@ -944,7 +1008,7 @@ When you add a new idea:
 When you accept an idea:
 
 1. Create or update an ADR.
-2. Move the note from `Future` to `Current`.
+2. Move the note from `future/` to `current/`.
 3. Update related diagrams.
 4. Update entity notes.
 5. Update scenario notes.
@@ -955,8 +1019,8 @@ When you accept an idea:
 An open question has a status, exactly like an entity or an idea. So open questions
 live in two notes:
 
-- `Current/Open Questions.md` — questions this cycle answers;
-- `Future/Deferred Questions.md` — questions whose answer comes later.
+- `current/open-questions.md` — questions this cycle answers;
+- `future/deferred-questions.md` — questions whose answer comes later.
 
 One shared list looks tidy and reads badly. A release blocker sits next to a question
 nobody will read for a year. The reader cannot tell them apart. The page then grows
@@ -988,7 +1052,7 @@ list always drifts from the first one.
 
 ### Every deferred question names its signal
 
-The `Future/` folder asks every idea for a trigger. A deferred question owes the same
+The `future/` folder asks every idea for a trigger. A deferred question owes the same
 thing: the exact signal that brings the answer. Keep the signals in one table at the
 top of the note, one row per question.
 
@@ -1031,7 +1095,7 @@ Rules when a new ADR replaces an older one:
    `Accepted (partially superseded)` and pin a banner at the top naming the new ADR
    and the exact scope of the change.
 3. **If the whole decision is replaced**, set `Superseded`, add a tombstone, and move
-   it to `Archive`.
+   it to `archive/`.
 4. **Never leave a one-directional pointer.** `Supersedes` on the new ADR without
    `Superseded by` on the old one is a defect — backlinks must resolve both ways.
 
@@ -1067,43 +1131,62 @@ A good spec lets you answer fast:
 
 ## Naming conventions
 
-Pick one convention and hold it — drift is what produces duplicate and orphan notes.
+Pick one convention and hold it. Drift is what produces duplicate and orphan notes.
+The mode you picked in [Pick the vault mode first](#pick-the-vault-mode-first)
+decides the shape of every name below.
 
-- **Folders**: Title Case with spaces — `User Scenarios/`, `Entity Candidates/`,
-  `Architecture Ideas/`. Not `user-scenarios/`, not `entity_candidates/`.
+**Repo mode (the default)**
+
+- **Folders**: kebab-case — `user-scenarios/`, `entity-candidates/`,
+  `architecture-ideas/`. Not `User Scenarios/`, not `entity_candidates/`.
+- **Notes**: kebab-case — `core-flow.md`, `data-model.md`.
+- **Index notes**: exactly one per folder, prefixed `00-` — `00-adr-index.md`.
+- **ADR files**: `adr-nnn-short-title.md` with a zero-padded number.
+
+**Obsidian mode**
+
+- **Folders**: Title Case with spaces — `User Scenarios/`, `Entity Candidates/`.
+- **Notes**: Title Case with spaces — `Core Flow.md`, `Data Model.md`.
 - **Index notes**: exactly one per folder, prefixed `00 ` — `00 ADR Index.md`.
 - **ADR files**: `ADR-NNN Short Title.md` with a zero-padded number.
-- **Wikilinks to ADRs**: link the full note name, `[[ADR-024 Plan stored as ...]]`,
-  not the bare `[[ADR-024]]`. Bare links rely on Obsidian fuzzy-match and break in
-  plain Markdown renderers (GitHub, Confluence).
-- **Link by short name, not path**: write `[[KnowledgeUnit]]`, not
-  `[[../Entities/KnowledgeUnit]]`. Set Obsidian's "New link format" to *Shortest
-  path when possible*. Path links break when a note moves, clutter the graph, and
-  defeat backlink matching. Keep note names unique so short links stay unambiguous.
-  (This is the Obsidian default; for GitHub/Confluence rendering, use relative Markdown
-  links instead — see *Rendering outside Obsidian* below.)
-- **Glossary invariant**: every entity in `Current/Entities/` must have a matching
-  term in `02 Glossary.md`. The glossary is the ubiquitous language — an entity that
+
+**Both modes**
+
+- **Name an ADR in full**: `adr-024-plan-stored-as-a-subtree.md`, never
+  `adr-024.md`. The bare number tells a reader nothing, and a link to it says
+  nothing either.
+- **Keep note names unique** across the vault. Two notes with one name make every
+  link to that name a guess.
+- **Glossary invariant**: every entity in `current/entities/` must have a matching
+  term in `02-glossary.md`. The glossary is the ubiquitous language. An entity that
   is not in it is vocabulary that drifts.
 
-## Rendering outside Obsidian (GitHub, Confluence)
+## Link style
 
-The link rules above default to short-name `[[wikilinks]]`, tuned for Obsidian:
-rename-aware links, graph view, backlinks. But wikilinks do not render in plain Markdown
-viewers (GitHub, Confluence) — they show as literal `[[Note]]` text.
+**Repo mode uses relative Markdown links.** They render everywhere: in Obsidian,
+on GitHub, on GitLab, in a pull request diff.
 
-If the vault must also render there, switch to **relative Markdown links**:
+- **Body links**: `[ADR-024 Plan stored as a subtree](../adr/adr-024-plan-stored-as-a-subtree.md)`.
+  kebab-case names need no URL escaping. A name with a space would need `%20`,
+  and a `&` would need `%26`.
+- **Link the note, not the folder.** A link that ends at a folder lands nowhere on
+  a forge.
+- **Frontmatter** `related:` holds plain note names, never links. No renderer turns
+  a frontmatter value into a link, in either mode.
+- **Mermaid** renders natively on GitHub in a fenced `mermaid` block. Diagrams need
+  no change in either mode.
 
-- **Body links**: `[Note Name](relative/path/Note%20Name.md)` — URL-encode spaces
-  (`%20`) and `&` (`%26`). These resolve in **both** Obsidian and GitHub.
-- **Frontmatter** `related:` wikilinks never become links in a Markdown renderer — keep
-  them as plain note names.
-- **Mermaid** renders natively on GitHub (fenced `mermaid` code blocks), so diagrams
-  need no change — the diagram-first approach survives the move intact.
+**Obsidian mode uses short-name wikilinks**: `[[KnowledgeUnit]]`, not
+`[[../Entities/KnowledgeUnit]]`. Set Obsidian's "New link format" to *Shortest path
+when possible*. A path wikilink breaks when a note moves, and it clutters the graph.
+Link an ADR by its full note name, `[[ADR-024 Plan stored as a subtree]]`, never the
+bare `[[ADR-024]]`.
 
-Trade-off: you lose Obsidian's automatic link rewrite on rename — moving or renaming a
-note means fixing inbound links by hand (or re-running a wikilink→relative-path
-converter). Pick one link style per vault and hold it; mixing wikilinks and relative
+**A wikilink is dead text on a forge.** GitHub and Confluence show `[[Note]]` as
+those exact characters. So a vault that anyone reads outside Obsidian belongs in
+repo mode.
+
+**Pick one style per vault and hold it.** A vault that mixes wikilinks and relative
 links is the drift this section exists to prevent.
 
 ## Invariants (machine-checkable)
@@ -1111,27 +1194,31 @@ links is the drift this section exists to prevent.
 These are the rules a validator can enforce. A vault that satisfies all of them is
 structurally sound; treat any violation as a defect, not a style preference.
 
-1. Exactly one `00 ` index note per folder; no second/empty index file.
+The paths below are written in repo mode. In Obsidian mode read `00 ` for `00-`,
+and Title Case for every folder name.
+
+1. Exactly one index note per folder, prefixed `00-`. No second index file, and no
+   empty one. `templates/` is the only folder that has none.
 2. No empty (0-byte) notes.
 3. Every note has a non-empty `summary` of twenty words or fewer.
-4. Every entity in `Current/Entities/` is referenced by at least one scenario.
+4. Every entity in `current/entities/` is referenced by at least one scenario.
 5. Every scenario links to at least one entity.
-6. Every entity in `Current/Entities/` has a term in `02 Glossary.md`.
-7. Every note in `Future/` has a non-empty `## Trigger` and links to at least one
-   note in `Current/`.
+6. Every entity in `current/entities/` has a term in `02-glossary.md`.
+7. Every note in `future/` has a non-empty `## Trigger` and links to at least one
+   note in `current/`.
 8. Every ADR has all required sections, including `Revisit trigger` and `Supersession`.
 9. Supersession is bidirectional: if ADR-A says `Supersedes B`, then B says
    `Superseded by A` (whole or partial).
-10. No wikilink points to a non-existent note (excluding template placeholders).
-11. No bare `[[ADR-NNN]]` links, and no path links (`[[../Entities/X]]`) — use the
-    short note name. (In GitHub-rendering mode this flips: relative Markdown links are
-    the required form — see *Rendering outside Obsidian* — but bare `[[ADR-NNN]]` stays
-    forbidden.)
-12. No note with `Status: Superseded` / `Rejected` left in `Current/` without a
+10. Every link resolves to a note that exists (template placeholders excluded).
+11. One link style in the whole vault. In repo mode every body link is a relative
+    Markdown link, and a `[[wikilink]]` in a body is a defect. In Obsidian mode it
+    is the other way round. Either way, a link to an ADR by its bare number
+    (`adr-024.md`, `[[ADR-024]]`) is forbidden.
+12. No note with `Status: Superseded` / `Rejected` left in `current/` without a
     tombstone pointer.
-13. Every question in `Future/Deferred Questions.md` has a row in the signals table.
+13. Every question in `future/deferred-questions.md` has a row in the signals table.
 14. No numbered question heading (`Q3`, `Open question 4`) in either questions note.
-15. Every note in `Current/Screens/` is named by at least one scenario, and every
+15. Every note in `current/screens/` is named by at least one scenario, and every
     scenario lists the screens it crosses.
 16. Every screen note has a parts table and a check list. A note without them is a
     placeholder.
@@ -1145,7 +1232,7 @@ structurally sound; treat any violation as a defect, not a style preference.
 Do not:
 
 - keep one huge file for the whole architecture;
-- **put diagrams in a separate `Diagrams/` folder** — embed them in the architecture files;
+- **put diagrams in a separate `diagrams/` folder** — embed them in the architecture files;
 - draw diagrams without explanations;
 - define entities without scenarios;
 - write scenarios without links to entities;
@@ -1163,10 +1250,10 @@ Do not:
 - mark a question solved with a tick instead of deleting it;
 - make architecture decisions without an ADR;
 - supersede an ADR with a one-directional pointer (new note only, old note untouched);
-- leave a superseded note in `Current` reading as live truth;
+- leave a superseded note in `current/` reading as live truth;
 - omit a current entity from the glossary;
 - keep a second or empty index note in a folder;
-- link ADRs by bare number (`[[ADR-007]]`) instead of the full note name;
+- link an ADR by its bare number instead of its full note name;
 - use Mermaid as the only source of meaning;
 - treat Obsidian as a plain Markdown folder;
 - mix current and future without clear marking;
@@ -1181,5 +1268,5 @@ Entities explain what.
 ADR explains why this way.
 Diagrams explain visually.
 Future notes preserve what is not current yet.
-Obsidian links connect everything.
+Links connect everything.
 ```
