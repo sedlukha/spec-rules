@@ -16,7 +16,7 @@ Two reasons put a question here. The answer only arrives after the release, or t
 question is not about the current scope at all.
 
 No question here blocks work. The spec runs on a calculated number, a rough number, or
-a rule that holds anyway. Questions this cycle answers live in [[Open Questions]].
+a rule that holds anyway. Questions this cycle answers live in [Open questions](../current/open-questions.md).
 
 The same rule applies: a solved question is deleted whole, and questions carry no
 numbers.
@@ -42,4 +42,4 @@ and ADRs that the question touches.
 
 ## Related notes
 
-Links to [[00 Home]], [[Open Questions]], and [[00 Future Index]].
+Links to [Home](../00-home.md), [Open questions](../current/open-questions.md), and [Future index](00-future-index.md).

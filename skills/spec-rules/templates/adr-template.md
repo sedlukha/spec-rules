@@ -11,7 +11,7 @@ summary: "What the decision changes, and the two options it rejected"
 ---
 
 <!-- If superseded, pin a banner here, above the title:
-> ⚠️ Partially superseded by [[ADR-XXX ...]] — storage model only; the decision below still holds.
+> ⚠️ Partially superseded by [ADR-XXX …](adr-xxx-short-title.md). Storage model only. The decision below still holds.
 -->
 
 # ADR-XXX Decision Title
@@ -37,7 +37,8 @@ When to review the decision.
 ## Supersession
 - Supersedes: ADRs this one replaces, whole or in part.
 - Superseded by: ADRs that replace this one, with WHICH PART
-  (e.g. "[[ADR-XXX]] — physical storage; semantic independence still holds").
+  (e.g. "[ADR-XXX …](adr-xxx-short-title.md) replaces the physical storage.
+  Semantic independence still holds").
 
 ## Related notes
 Links to entities, scenarios, diagrams.
