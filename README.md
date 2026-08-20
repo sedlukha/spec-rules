@@ -69,9 +69,9 @@ npx skills add sedlukha/spec-rules
 This installs `skills/spec-rules/` — `SKILL.md` plus its `templates/`. Or copy that
 folder manually into your skills directory (e.g. `.claude/skills/spec-rules/`).
 
-The skill is explicit-invocation only (`disable-model-invocation: true`) — call it when
-you want help building or maintaining a spec vault. To let the model trigger
-it automatically, remove that line from the frontmatter.
+The model can trigger the skill on its own, when the work looks like spec
+writing. To make it explicit only, add `disable-model-invocation: true` to the
+frontmatter. Then it runs when you call it by name, and never on its own.
 
 ## The one-line summary
 

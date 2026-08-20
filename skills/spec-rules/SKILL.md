@@ -1,7 +1,6 @@
 ---
 name: spec-rules
 description: "Write a spec as a linked knowledge base of atomic notes — entities, scenarios, ADRs with supersession tracking, status separation, and embedded Mermaid diagrams."
-disable-model-invocation: true
 allowed-tools: Read, Glob, Edit, Write, AskUserQuestion
 ---
 
@@ -58,12 +57,12 @@ on the forge as well: GitHub, GitLab, a pull request. Most vaults are this one.
 
 **Obsidian mode** is for a vault that lives in Obsidian and nowhere else.
 
-| | Repo mode (default) | Obsidian mode |
-| --- | --- | --- |
-| Folders | `user-scenarios/` | `User Scenarios/` |
-| Notes | `core-flow.md` | `Core Flow.md` |
-| Index note | `00-adr-index.md` | `00 ADR Index.md` |
-| ADR files | `adr-024-short-title.md` | `ADR-024 Short Title.md` |
+|            | Repo mode (default)                          | Obsidian mode             |
+| ---------- | -------------------------------------------- | ------------------------- |
+| Folders    | `user-scenarios/`                            | `User Scenarios/`         |
+| Notes      | `core-flow.md`                               | `Core Flow.md`            |
+| Index note | `00-adr-index.md`                            | `00 ADR Index.md`         |
+| ADR files  | `adr-024-short-title.md`                     | `ADR-024 Short Title.md`  |
 | Body links | `[ADR-024 …](../adr/adr-024-short-title.md)` | `[[ADR-024 Short Title]]` |
 
 Nothing else changes. The folders, the note types, the required sections, the
@@ -450,12 +449,12 @@ stale, and the reader has to guess which one is true.
 
 > **A scenario is time. A screen is place.**
 
-| | Scenario | Screen |
-| --- | --- | --- |
-| Question | What does the person do, in what order | What is on this page |
-| Words | Verbs | Nouns |
-| Test word | "then" | "here" |
-| Reach | Crosses screens | One screen |
+|           | Scenario                               | Screen               |
+| --------- | -------------------------------------- | -------------------- |
+| Question  | What does the person do, in what order | What is on this page |
+| Words     | Verbs                                  | Nouns                |
+| Test word | "then"                                 | "here"               |
+| Reach     | Crosses screens                        | One screen           |
 
 Wrote "then he presses save"? That is a scenario. Wrote "here is a save button"? That
 is a screen.
@@ -505,12 +504,12 @@ bar, the accessibility rules, and the interface copy.
 
 An index that lists only the finished screens hides the useful part.
 
-| Group | What it holds |
-| --- | --- |
-| Thought through | Screens with their own note |
+| Group                  | What it holds                                       |
+| ---------------------- | --------------------------------------------------- |
+| Thought through        | Screens with their own note                         |
 | Drawn by somebody else | A third-party form, or a page from a shared library |
-| Deferred | Screens in `future/`, each with its trigger |
-| Never | Screens that will not exist, each with the reason |
+| Deferred               | Screens in `future/`, each with its trigger         |
+| Never                  | Screens that will not exist, each with the reason   |
 
 The last group earns its place. "No price screen, because the button already names the
 price" answers the same proposal three times a year.
@@ -557,11 +556,11 @@ window with almost no height.
 
 ### A screen note ends with three lists
 
-| List | What it prevents |
-| --- | --- |
-| What is not here, and why | The control you removed returns next quarter |
-| What goes wrong | The empty, partial, and broken cases stay unwritten |
-| What to check | A tester cannot write cases from the note |
+| List                      | What it prevents                                    |
+| ------------------------- | --------------------------------------------------- |
+| What is not here, and why | The control you removed returns next quarter        |
+| What goes wrong           | The empty, partial, and broken cases stay unwritten |
+| What to check             | A tester cannot write cases from the note           |
 
 The last list is the point of the whole note. A manager must understand every screen
 note. A tester must be able to write test cases from it.
@@ -573,13 +572,13 @@ architecture note for them, `current/architecture/routing.md`.
 
 Its scope is narrow on purpose.
 
-| In this note | Somewhere else |
-| --- | --- |
-| The list of addresses | What is on each page, in the screen note |
-| Who decides a redirect | The map of transitions, in the journey note |
-| The back button | Layout, copy, and parts |
-| A cold open by direct link | |
-| The language prefix | |
+| In this note               | Somewhere else                              |
+| -------------------------- | ------------------------------------------- |
+| The list of addresses      | What is on each page, in the screen note    |
+| Who decides a redirect     | The map of transitions, in the journey note |
+| The back button            | Layout, copy, and parts                     |
+| A cold open by direct link |                                             |
+| The language prefix        |                                             |
 
 ### Every screen has its own address
 
@@ -606,11 +605,11 @@ screens back into panels.
 An address that means "the project I opened last" points at different data on
 different days. The bookmark then lies, and a second tab lies as well.
 
-| Rule | Why |
-| --- | --- |
-| Put the object id in the address, even while there is only one object | Then nothing has to move when the second one arrives |
-| Use the object's own id, never its position in a list | Deleting a neighbour would change every address |
-| Make the id random, not sequential | A neighbouring number must not reach somebody else's work |
+| Rule                                                                  | Why                                                       |
+| --------------------------------------------------------------------- | --------------------------------------------------------- |
+| Put the object id in the address, even while there is only one object | Then nothing has to move when the second one arrives      |
+| Use the object's own id, never its position in a list                 | Deleting a neighbour would change every address           |
+| Make the id random, not sequential                                    | A neighbouring number must not reach somebody else's work |
 
 An example shape: `/p/<project>`, `/p/<project>/item/<item>`, `/p/<project>/export`.
 
@@ -647,10 +646,10 @@ loop.
 A screen reached from two places then returns to the right one, and it needs no second
 address.
 
-| Pressed back on | Lands on |
-| --- | --- |
-| Item editor | The workspace, at that item |
-| Export | Wherever the person came from |
+| Pressed back on | Lands on                      |
+| --------------- | ----------------------------- |
+| Item editor     | The workspace, at that item   |
+| Export          | Wherever the person came from |
 
 **There may be no history at all.** A bookmark or a reload leaves nothing to go back
 to. Name the fallback for every such screen, or the arrow throws the person off the
@@ -661,12 +660,12 @@ site.
 Any address can open from nothing: a bookmark, a reload, a link one year old. The
 object may be gone.
 
-| Opened | What shows | Who decides |
-| --- | --- | --- |
-| A live object | Its screen | — |
-| A deleted object | Home, and the address in the bar is replaced | Server |
-| An object from another device | Home. The hint is cleared first | Client |
-| A deleted child object | The parent screen | Client |
+| Opened                        | What shows                                   | Who decides |
+| ----------------------------- | -------------------------------------------- | ----------- |
+| A live object                 | Its screen                                   | —           |
+| A deleted object              | Home, and the address in the bar is replaced | Server      |
+| An object from another device | Home. The hint is cleared first              | Client      |
+| A deleted child object        | The parent screen                            | Client      |
 
 **Replace the address in the bar.** Otherwise a reload repeats the miss, and the back
 button returns to the same dead address.
@@ -677,12 +676,12 @@ not-found page.
 
 ### What lives without an address
 
-| What | Why |
-| --- | --- |
-| A panel that leaves the work visible | It hides nothing |
-| A menu in the header | It opened and closed. Nobody returns to it |
-| A confirm dialog | The answer is needed now |
-| A short undo bar | It lives for about ten seconds |
+| What                                 | Why                                        |
+| ------------------------------------ | ------------------------------------------ |
+| A panel that leaves the work visible | It hides nothing                           |
+| A menu in the header                 | It opened and closed. Nobody returns to it |
+| A confirm dialog                     | The answer is needed now                   |
+| A short undo bar                     | It lives for about ten seconds             |
 
 **A third-party overlay is the tricky one.** A payment form drawn by somebody else has
 no address, because the screen under it did not change. But the phone back button must
@@ -966,7 +965,7 @@ Embed the diagram in an architecture file (e.g. `data-model.md`), not a separate
 
 Structure:
 
-```text
+````text
 # Data Model
 
 ## Summary
@@ -990,8 +989,10 @@ erDiagram
 - [key insight 2]
 
 ## Related notes
+
 Links to entities, scenarios, ADRs.
-```
+
+````
 
 **Important:** the diagram must not be the only source of information. Always keep explanatory text next to the diagram.
 
