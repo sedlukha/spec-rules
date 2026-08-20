@@ -1,6 +1,6 @@
 ---
 name: spec-rules
-description: "Write a spec as a linked knowledge base of atomic notes — entities, scenarios, ADRs with supersession tracking, status separation, and embedded Mermaid diagrams."
+description: "Write a spec as a linked knowledge base of atomic notes — entities, scenarios, ADRs with supersession tracking, status separation, and embedded Mermaid diagrams. Use when writing or changing a note in a spec vault. That covers an entity, a scenario, a screen, an ADR, and an open question."
 allowed-tools: Read, Glob, Edit, Write, AskUserQuestion
 ---
 
