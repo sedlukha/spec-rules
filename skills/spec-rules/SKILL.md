@@ -1027,6 +1027,19 @@ One shared list looks tidy and reads badly. A release blocker sits next to a que
 nobody will read for a year. The reader cannot tell them apart. The page then grows
 into a wall of text, and people stop using it.
 
+### Read the owner note's reasons before you file a question
+
+A rule usually carries its own why. That why often decides a case nobody wrote
+down. So open the owner note and read the reason beside every rule that touches
+your case. The answer is often already there, and the work is then a new rule
+sentence, not a question.
+
+One screen had two rules. It reads its record again when the tab becomes visible,
+and an edit begun before that return is finished rather than dropped. A session met
+both at once and filed "which of the two wins" as an open question. The first rule
+already carried its reason: nothing on the screen may move while a finger is on it.
+That reason answers the case. The registry then held a question that was not one.
+
 ### The sorting test is not "does it block?"
 
 On a mature vault almost no question blocks work. The spec already has something in
