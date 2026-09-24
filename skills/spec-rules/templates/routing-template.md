@@ -112,7 +112,8 @@ above then stays valid.
 - Clearing the browser storage while the hint stays does not loop.
 - A made-up address shows the not-found page.
 
-In a layered vault these lines live in a check list in `qa/`. Keep one link here.
+In a layered vault drop this whole section. The lines live in a check list in
+`qa/`, and "Related notes" names that list in one line.
 
 ## Related notes
 

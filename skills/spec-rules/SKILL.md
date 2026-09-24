@@ -96,6 +96,9 @@ one folder with one owner.
 and their owners. No layers named there means the vault uses status folders.
 Then the rules in this section do not apply.
 
+**Where the vault's `AGENTS.md` differs from this skill, the vault wins.** That
+covers a rule, a note shape and an invariant.
+
 ### The model
 
 A layered vault follows this model. A vault may rename, merge or drop a layer,
@@ -105,7 +108,7 @@ and its `AGENTS.md` says so.
 | --- | --- | --- |
 | `core/` | everybody | the glossary, shared numbers, decision numbers, open questions |
 | `product/` | the product manager | who it is for, the release, money, the user journey, scenarios |
-| `content/` | the editor | what a person reads: interface text, legal pages, arguments |
+| `content/` | the editor or marketing | what a person reads: interface text, legal pages, arguments |
 | `design/` | the designer | screens, cross-screen rules, the visual system, accessibility |
 | `code/` | the developer | data, entities, addresses, measurements |
 | `qa/` | the tester | check lists, one per part of the product |
@@ -161,8 +164,9 @@ product, not an owner.
   a second owner in `code/`. It links the note that owns its rules.
 - **A list line says what must be true.** The reason lives with the owner of
   the rule, and the line links to it.
-- **The note that a list checks keeps no check lines.** Its "What to check"
-  section becomes one link to the list.
+- **The note that a list checks keeps no check lines.** It has no "What to
+  check" heading either. It names its list in one line, under the parts table
+  or in "Related notes".
 
 ### A mixed note is cut
 
@@ -721,8 +725,9 @@ window with almost no height.
 The last list is the point of the whole note. A manager must understand every screen
 note. A tester must be able to write test cases from it.
 
-In a layered vault the check lines live in `qa/`, not here. The screen note keeps
-the heading and one link to its list.
+In a layered vault the check lines live in `qa/`. The screen note then has no
+"What to check" heading. It names its list in one line, under the parts table or
+in "Related notes".
 
 ## One note owns the addresses
 
@@ -878,7 +883,8 @@ The address note is testable, so give the tester lines to run.
 - Clearing the browser storage while the hint stays does not loop.
 - A made-up address shows the not-found page.
 
-In a layered vault these lines go to a list in `qa/`. The address note links it.
+In a layered vault these lines go to a list in `qa/`. The address note has no
+check list heading then. It names the list in one line, in "Related notes".
 
 ## Note templates
 
@@ -985,7 +991,8 @@ A table: case, and what happens.
 
 ## What to check
 One line per check. A tester writes cases from this list.
-In a layered vault: one link to the list in `qa/`, and no lines here.
+In a layered vault: drop this heading. Name the list in `qa/` in one line,
+under Parts or in Related notes.
 
 ## Related notes
 Links to entities, scenarios, ADRs, and the address note.
@@ -1123,6 +1130,7 @@ Names a shared library will want later. The prefix shape for a second language.
 
 ## What to check
 One line per check, all of them testable from a bookmark.
+In a layered vault: drop this heading. Name the list in `qa/` in Related notes.
 ```
 
 ### Diagram inside an architecture file
@@ -1414,10 +1422,20 @@ and Title Case for every folder name.
     names a screen note.
 19. No two screens share one address.
 
-A layered vault adds these. In it, read `current/` above as "any layer".
+Where the vault's own `AGENTS.md` differs from an invariant here, the vault's
+`AGENTS.md` wins.
+
+A layered vault reads three of the invariants above in its own way:
+
+- Read `current/` as "any layer", in every invariant that names it.
+- Read `02-glossary.md` as `core/glossary.md`, in invariant 6.
+- Invariant 16: a screen note links its list in `qa/` instead of holding lines.
+
+A layered vault also adds these:
 
 20. Every note lives in a layer folder. Only `00-home.md` and the vault
-    `AGENTS.md` stand at the root.
+    `AGENTS.md` stand at the root. Deferred ideas are the one exception. They
+    live in a `future/` folder, or in a backlog beside the vault.
 21. No header holds `type`. `status` comes from the closed list, and an ADR's
     `decision_status` does too.
 22. One note per ADR number, across all layers.

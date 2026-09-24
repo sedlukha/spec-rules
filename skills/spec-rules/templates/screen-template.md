@@ -69,8 +69,8 @@ the ADR that owns each number. Do not restate the number.
 - One line per check. A tester writes cases from this list.
 - Include the back button, the empty case, and every state of the main action.
 
-In a layered vault the lines live in a check list in `qa/`. Keep this heading
-and one link to that list.
+In a layered vault drop this whole section. The lines live in a check list in
+`qa/`. Name that list in one line, under the parts table or in "Related notes".
 
 ## Related notes
 
