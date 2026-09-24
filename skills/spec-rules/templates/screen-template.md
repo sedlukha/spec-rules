@@ -1,12 +1,5 @@
 ---
-type: screen
 status: current
-stage: stage-1
-tags:
-  - screen
-  - current
-  - stage-1
-related: []
 summary: "What stands on this screen, in both layouts"
 ---
 
@@ -75,6 +68,9 @@ the ADR that owns each number. Do not restate the number.
 
 - One line per check. A tester writes cases from this list.
 - Include the back button, the empty case, and every state of the main action.
+
+In a layered vault the lines live in a check list in `qa/`. Keep this heading
+and one link to that list.
 
 ## Related notes
 

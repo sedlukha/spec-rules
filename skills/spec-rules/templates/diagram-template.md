@@ -1,10 +1,5 @@
 ---
-type: diagram
 status: current
-tags:
-  - diagram
-  - current
-related: []
 summary: "What the diagram shows, and the one thing to read from it"
 ---
 

@@ -1,12 +1,6 @@
 ---
-type: adr
-status: proposed
-supersedes: []
-superseded_by: []
-tags:
-  - adr
-  - decision
-related: []
+status: current
+decision_status: proposed
 summary: "What the decision changes, and the two options it rejected"
 ---
 
@@ -18,6 +12,9 @@ summary: "What the decision changes, and the two options it rejected"
 
 ## Status
 Proposed / Accepted / Accepted (partially superseded) / Superseded / Rejected.
+The header field `decision_status` holds `proposed`, `accepted` or `rejected`.
+In a layered vault this note lives in the `adr/` folder of its owner's layer.
+Its number is the next one across all layers.
 
 ## Context
 Why the question came up.
