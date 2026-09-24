@@ -1,13 +1,6 @@
 ---
-type: future-candidate
 status: future
-likely_stage: stage-2
 trigger: ""
-tags:
-  - future
-  - entity-candidate
-  - stage-2-candidate
-related: []
 summary: "The idea, and the signal that turns it into a decision"
 ---
 

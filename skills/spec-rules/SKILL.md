@@ -1,6 +1,6 @@
 ---
 name: spec-rules
-description: "Write a spec as a linked knowledge base of atomic notes — entities, scenarios, ADRs with supersession tracking, status separation, and embedded Mermaid diagrams. Use when writing or changing a note in a spec vault. That covers an entity, a scenario, a screen, an ADR, and an open question."
+description: "Write a spec as a linked knowledge base of atomic notes — entities, scenarios, ADRs with supersession tracking, status separation, layers by owner, and embedded Mermaid diagrams. Use when writing, moving or cutting a note in a spec vault. That covers an entity, a scenario, a screen, an ADR, a check list, and an open question."
 allowed-tools: Read, Glob, Edit, Write, AskUserQuestion
 ---
 
@@ -83,6 +83,141 @@ after every rename, whatever your editor promises.
 **Every example below is written in repo mode.** Read the table to get the
 Obsidian form.
 
+## Split a growing vault into layers by owner
+
+A young vault has one owner, and it splits by status: `current/`, `future/`,
+`archive/`. That shape stays valid, and most of this skill describes it.
+
+A vault grows owners. A product manager, an editor, a designer and a tester
+start to write in it. Then split the live spec by **layer**. Each layer is
+one folder with one owner.
+
+**Read the vault's own `AGENTS.md` first.** It names the layers of that vault
+and their owners. No layers named there means the vault uses status folders.
+Then the rules in this section do not apply.
+
+**Where the vault's `AGENTS.md` differs from this skill, the vault wins.** That
+covers a rule, a note shape and an invariant.
+
+### The model
+
+A layered vault follows this model. A vault may rename, merge or drop a layer,
+and its `AGENTS.md` says so.
+
+| Layer | Owner | What it holds |
+| --- | --- | --- |
+| `core/` | everybody | the glossary, shared numbers, decision numbers, open questions |
+| `product/` | the product manager | who it is for, the release, money, the user journey, scenarios |
+| `content/` | the editor or marketing | what a person reads: interface text, legal pages, arguments |
+| `design/` | the designer | screens, cross-screen rules, the visual system, accessibility |
+| `code/` | the developer | data, entities, addresses, measurements |
+| `qa/` | the tester | check lists, one per part of the product |
+
+Only `00-home.md` and the vault `AGENTS.md` stand at the root. Every other note
+lives in a layer. Deferred ideas stay out of the layers. They keep their own
+`future/` folder, or a backlog beside the vault. The vault `AGENTS.md` says
+which.
+
+### A note goes to the one who can overturn it
+
+The topic does not decide. A price on the home page names a block on a screen.
+It is still a product decision. Ask who has the right to change the note. Put
+it in that layer.
+
+### Isolation is who edits, not who links
+
+- **Write only in your layer.** A task in one layer changes only that folder.
+- **A link may cross into any layer, in any direction.** A screen may link a
+  code decision as its reason. A code decision may link a scenario.
+- **Never retell a fact of another layer. Link it.** A copy between layers is the
+  defect. The owner changes the fact, and the copy then lies.
+- **A change in another layer is a question, not an edit.** Write it in the open
+  questions register in `core/`. Its `Decides` column names the layer that owns
+  the answer. The owner decides and edits.
+
+A strict link direction looks tidy. It was measured on a real vault and
+rejected. Of about 2,000 cross-layer links, 1,113 went "up", from product
+towards code. No order of the layers brought that number under 955. A reason
+points wherever the reason is. A strict direction would throw those reasons away.
+
+### Decisions: one numbering across layers
+
+- An ADR lives in the `adr/` folder of its layer, such as `design/adr/`.
+- One set of numbers covers every layer. Code writes "ADR-042" and finds one
+  note, whatever layer holds it.
+- A new ADR takes the next number after the largest in all `adr/` folders.
+- One note in `core/`, such as `core/decisions.md`, holds the numbering rule.
+  It also holds the table of holes and the map of how decisions depend on each
+  other. Each layer's `adr/` index lists only its own ADRs.
+
+### Check lists live only in `qa/`
+
+A tester checks one part of the product at a time. One list then holds its
+layout, its money rules and its storage. So a check list follows a part of the
+product, not an owner.
+
+- **One list per part of the product**, named after it: `qa/checkout-checks.md`.
+- **The `checks:` header field makes a note a list.** It holds the list's id
+  prefix, such as `checks: CHK`. A script finds lists by that field. A list
+  outside `qa/` is a defect.
+- **A long list takes `##` sections by part of the screen.** A section may name
+  a second owner in `code/`. It links the note that owns its rules.
+- **A list line says what must be true.** The reason lives with the owner of
+  the rule, and the line links to it.
+- **The note that a list checks keeps no check lines.** It has no "What to
+  check" heading either. It names its list in one line, under the parts table
+  or in "Related notes".
+
+### A mixed note is cut
+
+A note that holds sections of two owners is cut.
+
+1. Find each section with another owner.
+2. Move the whole section, word for word, to a note of that owner. Do not
+   rewrite while you move. A move and a rewrite in one step hide mistakes.
+3. Leave one link in the old note. Put it in a section that still has its
+   own content.
+4. Leave no empty heading behind with only a pointer under it. The reader opens
+   the heading and finds nothing.
+
+A screen is not cut in half. It stays one design note, and only whole sections
+with another owner leave it.
+
+### Layered layout
+
+```text
+project/
+  AGENTS.md                           (names the layers and owners)
+  00-home.md
+  core/
+    00-core-index.md
+    glossary.md
+    decisions.md                      (numbering rule, holes, map)
+    open-questions.md                 (one register, a Decides column)
+  product/
+    00-product-index.md
+    user-scenarios/
+    adr/
+      00-product-adr-index.md
+  content/
+  design/
+    screens/
+    screen-rules/
+    adr/
+  code/
+    entities/
+    data-model.md
+    routing.md
+    adr/
+  qa/
+    00-qa-index.md
+    how-we-check.md
+    checkout-checks.md
+```
+
+Every folder keeps its `00-` index. In Obsidian mode the folders are
+`Core/`, `Product/`, `QA/` and so on.
+
 ## Use the full power of Obsidian
 
 Use everything Obsidian offers. Do not treat it as a plain folder of Markdown files.
@@ -136,8 +271,12 @@ Graph view should help you see:
 
 ### 4. Tags
 
-Use tags for status, type, and stage. The values below are examples — replace the
-domain-specific ones (the last block) with tags that fit your own stack:
+Tags are optional. A tag that nobody filters by goes wrong quietly. Add one
+only when a search or a script reads it. A layered vault needs no type tag: the
+folder says what a note is.
+
+The values below are examples. Replace the domain-specific ones (the last block)
+with tags that fit your own stack:
 
 ```text
 #current
@@ -185,41 +324,47 @@ Diagrams must not be the only form of docs. Every diagram needs:
 
 ### 6. Properties / YAML frontmatter
 
-Use properties for machine-readable metadata.
+Use properties for machine-readable metadata. Keep the header short. **Add a
+field only when a script reads it on the same day.** A field nothing reads goes
+wrong quietly. A copy of the body in a field drifts away from the body.
+
+**The folder says what a note is, so no header holds `type`.** The layer, the
+`adr/` folder, the `00-` prefix and the `entities/` folder already say it. The
+field only repeats that, and after a move it lies.
+
+The header of a live note holds these fields, and no more:
+
+| Field | On which note | Values |
+| --- | --- | --- |
+| `status` | every note | `current`, `future`, `archive` |
+| `summary` | every note | one line, see below |
+| `decision_status` | an ADR | `proposed`, `accepted`, `rejected` |
+| `checks` | a check list | the id prefix of its lines, such as `CHK` |
+
+A deferred idea adds `trigger`, because a script checks that it has one.
 
 Example for a current entity:
 
 ```yaml
 ---
-type: entity
 status: current
-stage: stage-1
-tags:
-  - entity
-  - current
-  - stage-1
-related:
-  - customer
-  - invoice
 summary: "Order: what it holds, how it is versioned, who may change it"
 ---
 ```
 
-For future ideas:
+For a future idea:
 
 ```yaml
 ---
-type: future-candidate
 status: future
-likely_stage: stage-2
 trigger: "Need per-region tax metadata"
-tags:
-  - future
-  - entity-candidate
-  - stage-2-candidate
 summary: "Tax metadata per region. Waits for the second market"
 ---
 ```
+
+**An older vault may still carry `type`, `tags`, `related` or `stage`.** Those
+fields stay valid in a status-folder vault. Do not add them to a new note. Drop
+them when the vault moves to layers, in one sweep with a script check.
 
 **Every note carries a `summary` line.** It says in one line what is inside the
 note.
@@ -250,7 +395,7 @@ gets a one-line answer to "what is in here?" at the top of every note.
 
 ### 7. Templates
 
-Create and use note templates. This package ships nine in `templates/`:
+Create and use note templates. This package ships ten in `templates/`:
 
 - `entity-template.md`;
 - `scenario-template.md`;
@@ -260,7 +405,11 @@ Create and use note templates. This package ships nine in `templates/`:
 - `future-candidate-template.md`;
 - `open-questions-template.md` (the current note);
 - `deferred-questions-template.md` (the future note);
-- `routing-template.md` (the address note).
+- `routing-template.md` (the address note);
+- `check-list-template.md` (a list in `qa/`, layered vault only).
+
+No template writes `type`. Paths inside a template are written for a
+status-folder vault. In a layered vault, point them at the layer folders.
 
 Optional, not shipped (add a template file before referencing): Glossary Term,
 Pipeline / Process.
@@ -282,6 +431,9 @@ Use MOC (Map of Content) notes. One index per folder, always named with the
 
 (In Obsidian mode the prefix is `00 ` with a space: `00 ADR Index.md`.)
 
+A layered vault names each index after its folder: `00-core-index.md`,
+`00-design-index.md`, `00-design-adr-index.md`.
+
 Exactly one index file per folder, and `templates/` is the only folder without
 one. A second index, such as an empty `adr-index.md` next to `00-adr-index.md`,
 is a defect — see [Invariants](#invariants-machine-checkable).
@@ -302,7 +454,12 @@ archive/
 - `future/` — ideas, candidates, Stage 2+ guesses;
 - `archive/` — outdated, rejected, or superseded material.
 
-Do not mix live architecture and future ideas in one layer without a clear status.
+Do not mix live architecture and future ideas in one folder without a clear status.
+
+A layered vault splits the live spec by owner instead of keeping one
+`current/`. Status still holds. Every note keeps its `status` field. Deferred
+ideas stay out of the layers. See
+[Split a growing vault into layers by owner](#split-a-growing-vault-into-layers-by-owner).
 
 Open questions carry a status too, so they split the same way. See
 [Open questions: two notes, not one list](#open-questions-two-notes-not-one-list).
@@ -341,6 +498,9 @@ raw idea
 Every idea must have a clear status.
 
 ## Recommended vault structure
+
+This is the status-folder shape, for a vault with one owner. A vault with
+several owners uses the [layered layout](#layered-layout) instead.
 
 Every folder below holds its own index note. `templates/` is the one exception:
 it holds blank forms, and an index of blank forms helps nobody.
@@ -565,6 +725,10 @@ window with almost no height.
 The last list is the point of the whole note. A manager must understand every screen
 note. A tester must be able to write test cases from it.
 
+In a layered vault the check lines live in `qa/`. The screen note then has no
+"What to check" heading. It names its list in one line, under the parts table or
+in "Related notes".
+
 ## One note owns the addresses
 
 Screens need addresses, and addresses need one owner. Give the vault a single
@@ -719,7 +883,13 @@ The address note is testable, so give the tester lines to run.
 - Clearing the browser storage while the hint stays does not loop.
 - A made-up address shows the not-found page.
 
+In a layered vault these lines go to a list in `qa/`. The address note has no
+check list heading then. It names the list in one line, in "Related notes".
+
 ## Note templates
+
+These show the body of each note. The header follows
+[Properties / YAML frontmatter](#6-properties--yaml-frontmatter), and holds no `type`.
 
 ### Entity note
 
@@ -821,6 +991,8 @@ A table: case, and what happens.
 
 ## What to check
 One line per check. A tester writes cases from this list.
+In a layered vault: drop this heading. Name the list in `qa/` in one line,
+under Parts or in Related notes.
 
 ## Related notes
 Links to entities, scenarios, ADRs, and the address note.
@@ -840,6 +1012,7 @@ What still needs deciding on this screen.
 
 ## Status
 Proposed / Accepted / Accepted (partially superseded) / Superseded / Rejected.
+The header field `decision_status` holds `proposed`, `accepted` or `rejected`.
 
 ## Context
 Why the question came up.
@@ -957,6 +1130,7 @@ Names a shared library will want later. The prefix shape for a second language.
 
 ## What to check
 One line per check, all of them testable from a bookmark.
+In a layered vault: drop this heading. Name the list in `qa/` in Related notes.
 ```
 
 ### Diagram inside an architecture file
@@ -1026,6 +1200,13 @@ live in two notes:
 One shared list looks tidy and reads badly. A release blocker sits next to a question
 nobody will read for a year. The reader cannot tell them apart. The page then grows
 into a wall of text, and people stop using it.
+
+### In a layered vault the register lives in `core/`
+
+There is one register for all layers, `core/open-questions.md`. Every question
+names the layer that decides it, in a `Decides` column or line. A question to
+another layer is how you ask for a change there. You never edit that layer's
+note yourself.
 
 ### Read the owner note's reasons before you file a question
 
@@ -1241,6 +1422,26 @@ and Title Case for every folder name.
     names a screen note.
 19. No two screens share one address.
 
+Where the vault's own `AGENTS.md` differs from an invariant here, the vault's
+`AGENTS.md` wins.
+
+A layered vault reads three of the invariants above in its own way:
+
+- Read `current/` as "any layer", in every invariant that names it.
+- Read `02-glossary.md` as `core/glossary.md`, in invariant 6.
+- Invariant 16: a screen note links its list in `qa/` instead of holding lines.
+
+A layered vault also adds these:
+
+20. Every note lives in a layer folder. Only `00-home.md` and the vault
+    `AGENTS.md` stand at the root. Deferred ideas are the one exception. They
+    live in a `future/` folder, or in a backlog beside the vault.
+21. No header holds `type`. `status` comes from the closed list, and an ADR's
+    `decision_status` does too.
+22. One note per ADR number, across all layers.
+23. A note with `checks:` in its header lives in `qa/`, and only there.
+24. Every question in the open questions register names the layer that decides it.
+
 ## Anti-patterns
 
 Do not:
@@ -1271,7 +1472,13 @@ Do not:
 - use Mermaid as the only source of meaning;
 - treat Obsidian as a plain Markdown folder;
 - mix current and future without clear marking;
-- duplicate the same information by hand in many places instead of linking.
+- duplicate the same information by hand in many places instead of linking;
+- in a layered vault, edit a note of another layer instead of filing a question;
+- retell a fact of another layer instead of linking it;
+- force every link to go one way between layers;
+- put a check list beside the note it checks, outside `qa/`;
+- cut a mixed note and leave an empty heading with only a pointer under it;
+- add a header field that no script reads, or bring `type` back.
 
 ## Final idea
 

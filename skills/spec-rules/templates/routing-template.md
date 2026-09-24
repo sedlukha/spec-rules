@@ -1,11 +1,5 @@
 ---
-type: architecture
 status: current
-stage: stage-1
-tags:
-  - current
-  - stage-1
-related: []
 summary: "Every address, who decides a move, and how back behaves"
 ---
 
@@ -117,6 +111,9 @@ above then stays valid.
 - A cold open of a deleted object replaces the address in the bar.
 - Clearing the browser storage while the hint stays does not loop.
 - A made-up address shows the not-found page.
+
+In a layered vault drop this whole section. The lines live in a check list in
+`qa/`, and "Related notes" names that list in one line.
 
 ## Related notes
 

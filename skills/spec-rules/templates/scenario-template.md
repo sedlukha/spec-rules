@@ -1,12 +1,5 @@
 ---
-type: scenario
 status: current
-stage: stage-1
-tags:
-  - scenario
-  - current
-  - stage-1
-related: []
 summary: "What the person does, in order, and what goes wrong"
 ---
 

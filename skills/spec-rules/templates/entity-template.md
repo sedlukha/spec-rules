@@ -1,12 +1,5 @@
 ---
-type: entity
 status: current
-stage: stage-1
-tags:
-  - entity
-  - current
-  - stage-1
-related: []
 summary: "The entity: what it holds, what it links to, what it cannot do"
 ---
 

@@ -46,6 +46,7 @@ skills/spec-rules/
     deferred-questions-template.md
     screen-template.md
     routing-template.md
+    check-list-template.md
 ```
 
 ## Use as a vault scaffold
@@ -53,7 +54,10 @@ skills/spec-rules/
 1. Copy `skills/spec-rules/templates/` into your vault's `templates/` folder.
 2. Create the status folders `current/`, `future/`, `archive/` and the MOC index
    notes (`00-home.md`, `00-current-index.md`, ...). See the recommended vault
-   structure in `SKILL.md`.
+   structure in `SKILL.md`. A vault with several owners (product, copy, design,
+   code, testing) splits the live spec into layers instead. The vault's own
+   `AGENTS.md` names them. See *Split a growing vault into layers by owner* in
+   `SKILL.md`.
 3. Point Obsidian's core **Templates** plugin at your `templates/` folder.
 4. Start capturing entities, scenarios, screens, and ADRs as linked notes.
 

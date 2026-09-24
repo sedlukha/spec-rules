@@ -1,9 +1,5 @@
 ---
-type: open-questions
 status: current
-tags:
-  - current
-  - open-question
 summary: "Questions we answer before the release. The register, not a note"
 ---
 
@@ -27,6 +23,9 @@ and ADRs that the question touches.
 
 **Question.** The one thing nobody knows yet. Name who can answer it: a measurement,
 a choice, or a person.
+
+**Decides.** In a layered vault, the layer that owns the answer. A question to
+another layer is how you ask for a change there.
 
 **Delays.** What waits for the answer. Write `Nothing` when nothing waits, and name
 what stands in place of the answer.
