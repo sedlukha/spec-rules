@@ -47,6 +47,11 @@ skills/spec-rules/
     screen-template.md
     routing-template.md
     check-list-template.md
+  scripts/                          The vault check, installed with the skill
+    check-spec.mjs                  Checks the vault against the invariants
+    check-lists.mjs                 Matches the check lists against the tests
+    spec-rules.config.example.mjs   The data of one vault, as an example
+    README.md                       Every rule and every config key
 ```
 
 ## Use as a vault scaffold
@@ -70,12 +75,25 @@ Cursor, OpenCode, and others):
 npx skills add sedlukha/spec-rules
 ```
 
-This installs `skills/spec-rules/` — `SKILL.md` plus its `templates/`. Or copy that
+This installs `skills/spec-rules/` — `SKILL.md` plus its `templates/` and `scripts/`. Or copy that
 folder manually into your skills directory (e.g. `.claude/skills/spec-rules/`).
 
 The model can trigger the skill on its own, when the work looks like spec
 writing. To make it explicit only, add `disable-model-invocation: true` to the
 frontmatter. Then it runs when you call it by name, and never on its own.
+
+## Check a vault with a script
+
+The skill carries a check for the invariants a script can read. It needs Node 18
+or newer and no install:
+
+```bash
+node .claude/skills/spec-rules/scripts/check-spec.mjs
+```
+
+The rules live in the script. The data of one vault lives in
+`spec-rules.config.mjs` in the vault's repo. See
+[`skills/spec-rules/scripts/README.md`](skills/spec-rules/scripts/README.md).
 
 ## The one-line summary
 

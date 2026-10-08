@@ -1442,6 +1442,28 @@ A layered vault also adds these:
 23. A note with `checks:` in its header lives in `qa/`, and only there.
 24. Every question in the open questions register names the layer that decides it.
 
+### A script checks them
+
+The skill carries a check in `scripts/`. Run it from the root of the vault's
+repo, where the skill is installed:
+
+```bash
+node .claude/skills/spec-rules/scripts/check-spec.mjs
+```
+
+It needs only Node. It checks the invariants a script can read, and the check
+lists against the tests. `scripts/README.md` names each rule and the invariant
+behind it.
+
+**The rules live in the script. The data of one vault lives in its own repo.**
+That data is the layers, the retired names, the wording that repeats on purpose
+and the language of the headings. It goes into `spec-rules.config.mjs` at the
+repo root. Never copy the script into a repo to change a rule. A copy drifts
+from the skill, and the next change in the skill never reaches it.
+
+Where the vault's `AGENTS.md` differs from an invariant, the config says so too.
+A rule turns off with `rules: { "<id>": false }`.
+
 ## Anti-patterns
 
 Do not:
