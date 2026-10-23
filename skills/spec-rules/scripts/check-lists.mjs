@@ -24,9 +24,7 @@ if (!config.lists) {
 
 const asked = positionals[0]?.toUpperCase()
 console.log(
-  checkLists(config, vault.notes, report, values.all ? "all" : asked).join(
-    "\n"
-  )
+  checkLists(config, vault.notes, report, values.all ? "all" : asked).join("\n")
 )
 
 process.exitCode = printProblems(report.problems)

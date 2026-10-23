@@ -34,7 +34,8 @@ export const readHeader = (text) => {
 }
 
 /** The note without its header block. */
-export const stripHeader = (text) => text.replace(/^---\r?\n[\s\S]*?\r?\n---/, "")
+export const stripHeader = (text) =>
+  text.replace(/^---\r?\n[\s\S]*?\r?\n---/, "")
 
 /** One field of a header block, or null. */
 export const field = (header, name) => {

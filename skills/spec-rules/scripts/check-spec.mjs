@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 // Check a spec vault against the invariants of the spec-rules skill. It reads
 // the vault, the check lists and the code that points at the vault. It needs
 // only Node, so a CI step can run it before any install.
@@ -8,8 +9,8 @@
 // The rules live here. The data of one vault lives in its own config file:
 // see `README.md` beside this file.
 
-import { isOn } from "./lib/config.mjs"
 import { start } from "./lib/cli.mjs"
+import { isOn } from "./lib/config.mjs"
 import { checkLists } from "./lib/lists.mjs"
 import { checkDecisionRefs, checkPointers } from "./lib/pointers.mjs"
 import { createReport, printProblems } from "./lib/report.mjs"

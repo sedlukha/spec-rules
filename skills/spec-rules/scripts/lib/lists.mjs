@@ -156,7 +156,11 @@ export const checkLists = (config, notes, report, detail) => {
   }
 
   for (const { file, id, list } of duplicates) {
-    report.fail("lists", file, `${id} is used twice. A free id here is ${freeId(list)}`)
+    report.fail(
+      "lists",
+      file,
+      `${id} is used twice. A free id here is ${freeId(list)}`
+    )
   }
 
   // Only the codes the lists declare. A wider pattern would fail on a fixture
@@ -256,7 +260,9 @@ export const checkLists = (config, notes, report, detail) => {
       if (missing.length === 0) {
         continue
       }
-      out.push(`  ${list.prefix}  ${basename(list.file, ".md")} —${missing.length}`)
+      out.push(
+        `  ${list.prefix}  ${basename(list.file, ".md")} —${missing.length}`
+      )
       if (!(all || list.prefix === only)) {
         continue
       }

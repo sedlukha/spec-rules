@@ -278,7 +278,11 @@ const checkNote = (config, note, names, fail) => {
     for (const entry of config.forbiddenHeadings) {
       const hit = note.text.match(entry.pattern)
       if (hit) {
-        fail("forbidden-heading", note.file, `${entry.message}: ${hit[0].trim()}`)
+        fail(
+          "forbidden-heading",
+          note.file,
+          `${entry.message}: ${hit[0].trim()}`
+        )
       }
     }
   }
@@ -292,7 +296,9 @@ const checkLayers = (config, notes, fail) => {
   const layers = new Set(config.layers)
   for (const note of notes) {
     const [top, ...rest] = note.relative.split("/")
-    if (rest.length === 0 ? !config.rootNotes.includes(top) : !layers.has(top)) {
+    if (
+      rest.length === 0 ? !config.rootNotes.includes(top) : !layers.has(top)
+    ) {
       fail(
         "layers",
         note.file,

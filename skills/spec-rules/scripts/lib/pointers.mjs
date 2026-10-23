@@ -111,7 +111,9 @@ export const checkPointers = (config, notes, decisions, report) => {
   const notesNamedBy = (part, within) => {
     const found = new Set()
     for (const [name, named] of [...names, ...heads]) {
-      if (!(part.startsWith(name) && AFTER_NAME.test(part.slice(name.length)))) {
+      if (
+        !(part.startsWith(name) && AFTER_NAME.test(part.slice(name.length)))
+      ) {
         continue
       }
       for (const file of named) {
