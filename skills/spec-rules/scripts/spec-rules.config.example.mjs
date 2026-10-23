@@ -71,6 +71,7 @@ export default {
     decisionWords: ["ADR", "decision"],
   },
 
+  // A vault with no check lists sets `lists: null`, and the list rules stay off.
   lists: {
     command: "pnpm check:lists",
     // A vault where every line is a machine line forbids a manual mark.

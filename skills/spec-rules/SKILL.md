@@ -152,6 +152,11 @@ points wherever the reason is. A strict direction would throw those reasons away
 
 ### Check lists live only in `qa/`
 
+**A vault may hold no check lists.** Its config then sets `lists: null`. There,
+skip every check list rule in this skill. That covers this section, the "What to
+check" list of a screen note, the list at the end of an address note, and
+invariant 16. Never add a check list or a check id to such a vault.
+
 A tester checks one part of the product at a time. One list then holds its
 layout, its money rules and its storage. So a check list follows a part of the
 product, not an owner.
@@ -1416,7 +1421,7 @@ and Title Case for every folder name.
 15. Every note in `current/screens/` is named by at least one scenario, and every
     scenario lists the screens it crosses.
 16. Every screen note has a parts table and a check list. A note without them is a
-    placeholder.
+    placeholder. A vault with `lists: null` asks for the parts table only.
 17. No screen note holds a number that an entity or an ADR owns.
 18. Every screen note has a row in the address table, and every row in that table
     names a screen note.
