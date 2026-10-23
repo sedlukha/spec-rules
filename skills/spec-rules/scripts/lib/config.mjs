@@ -32,6 +32,13 @@ export const CONFIG_FILE = "spec-rules.config.mjs"
  *   as `AGENTS.md`. They show links by example, so content rules skip them.
  * @property {string[]} statuses The closed list for `status`.
  * @property {string[]} decisionStatuses The closed list for `decision_status`.
+ * @property {{id: "number" | "slug", retired: string | null, words: string[], joins: string[]}} decisions How a
+ *   decision is named. A number is `ADR-024`. A slug is a short kebab-case name
+ *   of two words or more, `ADR-head-only`, and the file holds nothing else.
+ *   `retired` is a note with a table: its first column holds the slugs of
+ *   decisions that were merged or dropped. No new decision takes one of them.
+ *   In slug mode a word of `words` before a slug names a decision, in code and
+ *   in notes. `joins` link the slugs of a list: `decisions a-b and c-d`.
  * @property {string[]} goneFields Header fields the vault dropped. A layered
  *   vault drops `type` by default.
  * @property {number} summaryWords The longest `summary`, in words.
@@ -121,6 +128,7 @@ export const RULES = [
   "layers",
   "index",
   "decision-number",
+  "decision-refs",
   "future",
   "statements",
   "pointers",
@@ -132,6 +140,12 @@ const defaults = (vault, naming, raw) => {
   const names = NAMES[naming]
   return {
     decisionStatuses: ["accepted", "proposed", "rejected"],
+    decisions: {
+      id: "number",
+      joins: ["and", "or"],
+      retired: null,
+      words: ["ADR", "decision", "decisions"],
+    },
     forbiddenHeadings: [],
     frozen: [],
     future: {
@@ -185,7 +199,14 @@ const defaults = (vault, naming, raw) => {
 }
 
 /** Keys whose value is a group of settings, merged one level deep. */
-const GROUPS = ["future", "lists", "openQuestions", "pointers", "statements"]
+const GROUPS = [
+  "decisions",
+  "future",
+  "lists",
+  "openQuestions",
+  "pointers",
+  "statements",
+]
 
 const fail = (message) => {
   throw new Error(`spec-rules config: ${message}`)
@@ -232,6 +253,9 @@ export const mergeConfig = (raw = {}, fallbackVault = "docs/spec") => {
   }
   if (!["markdown", "wikilink"].includes(config.links)) {
     fail(`links is "${config.links}". Take "markdown" or "wikilink".`)
+  }
+  if (!["number", "slug"].includes(config.decisions?.id)) {
+    fail(`decisions.id is "${config.decisions?.id}". Take "number" or "slug".`)
   }
   config.index = NAMES[naming].index
   return config

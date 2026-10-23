@@ -140,15 +140,30 @@ rejected. Of about 2,000 cross-layer links, 1,113 went "up", from product
 towards code. No order of the layers brought that number under 955. A reason
 points wherever the reason is. A strict direction would throw those reasons away.
 
-### Decisions: one numbering across layers
+### Decisions: one id across layers
 
 - An ADR lives in the `adr/` folder of its layer, such as `design/adr/`.
-- One set of numbers covers every layer. Code writes "ADR-042" and finds one
+- One set of ids covers every layer. Code writes "ADR-042" and finds one
   note, whatever layer holds it.
 - A new ADR takes the next number after the largest in all `adr/` folders.
 - One note in `core/`, such as `core/decisions.md`, holds the numbering rule.
   It also holds the table of holes and the map of how decisions depend on each
   other. Each layer's `adr/` index lists only its own ADRs.
+
+**A busy vault names a decision by a slug, not a number.** Two branches that
+each add an ADR take the same next number. Each branch passes the check alone,
+and the duplicate shows only after both merge. A slug is a short kebab-case
+name of the decision, such as `head-only`. Two branches almost never pick the
+same one. The config turns it on with `decisions: { id: "slug" }`.
+
+- The file is `adr-<slug>.md` in repo mode and `ADR-<slug>.md` in Obsidian
+  mode. The title lives in the H1 and in the layer index, not in the file name.
+  So a new title breaks no link.
+- A slug has two words or more, and it never changes.
+- Code writes "decision head-only" or "ADR-head-only". Notes do the same in
+  their own language, such as a word set in `decisions.words`.
+- A merged or dropped decision leaves its slug in a table of the `core/` note.
+  `decisions.retired` names that note, and no new decision takes such a slug.
 
 ### Check lists live only in `qa/`
 
@@ -1341,20 +1356,23 @@ decides the shape of every name below.
   `architecture-ideas/`. Not `User Scenarios/`, not `entity_candidates/`.
 - **Notes**: kebab-case — `core-flow.md`, `data-model.md`.
 - **Index notes**: exactly one per folder, prefixed `00-` — `00-adr-index.md`.
-- **ADR files**: `adr-nnn-short-title.md` with a zero-padded number.
+- **ADR files**: `adr-nnn-short-title.md` with a zero-padded number, or
+  `adr-<slug>.md` in a vault of slugs.
 
 **Obsidian mode**
 
 - **Folders**: Title Case with spaces — `User Scenarios/`, `Entity Candidates/`.
 - **Notes**: Title Case with spaces — `Core Flow.md`, `Data Model.md`.
 - **Index notes**: exactly one per folder, prefixed `00 ` — `00 ADR Index.md`.
-- **ADR files**: `ADR-NNN Short Title.md` with a zero-padded number.
+- **ADR files**: `ADR-NNN Short Title.md` with a zero-padded number, or
+  `ADR-<slug>.md` in a vault of slugs.
 
 **Both modes**
 
-- **Name an ADR in full**: `adr-024-plan-stored-as-a-subtree.md`, never
-  `adr-024.md`. The bare number tells a reader nothing, and a link to it says
-  nothing either.
+- **Name a numbered ADR in full**: `adr-024-plan-stored-as-a-subtree.md`,
+  never `adr-024.md`. The bare number tells a reader nothing, and a link to it
+  says nothing either. A slug already says what the decision is, so it stands
+  alone.
 - **Keep note names unique** across the vault. Two notes with one name make every
   link to that name a guess.
 - **Glossary invariant**: every entity in `current/entities/` must have a matching
@@ -1413,7 +1431,7 @@ and Title Case for every folder name.
 11. One link style in the whole vault. In repo mode every body link is a relative
     Markdown link, and a `[[wikilink]]` in a body is a defect. In Obsidian mode it
     is the other way round. Either way, a link to an ADR by its bare number
-    (`adr-024.md`, `[[ADR-024]]`) is forbidden.
+    (`adr-024.md`, `[[ADR-024]]`) is forbidden. A slug may stand alone.
 12. No note with `Status: Superseded` / `Rejected` left in `current/` without a
     tombstone pointer.
 13. Every question in `future/deferred-questions.md` has a row in the signals table.
@@ -1443,7 +1461,9 @@ A layered vault also adds these:
     live in a `future/` folder, or in a backlog beside the vault.
 21. No header holds `type`. `status` comes from the closed list, and an ADR's
     `decision_status` does too.
-22. One note per ADR number, across all layers.
+22. One note per ADR number or slug, across all layers. In a vault of slugs,
+    every slug that a note or code names belongs to a live ADR, and no ADR
+    takes a retired slug.
 23. A note with `checks:` in its header lives in `qa/`, and only there.
 24. Every question in the open questions register names the layer that decides it.
 

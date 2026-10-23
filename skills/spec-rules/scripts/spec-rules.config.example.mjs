@@ -66,6 +66,17 @@ export default {
     },
   ],
 
+  // "number": `ADR-024`. A busy vault takes "slug": `ADR-head-only`. Two
+  // branches then never take the same next number.
+  decisions: {
+    id: "number",
+    // A note with a table. Its first column holds the slugs of merged and
+    // dropped decisions, and no new decision takes one.
+    retired: "core/decisions.md",
+    words: ["ADR", "decision", "decisions"],
+    joins: ["and", "or"],
+  },
+
   pointers: {
     roots: ["src"],
     decisionWords: ["ADR", "decision"],

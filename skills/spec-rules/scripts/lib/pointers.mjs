@@ -8,9 +8,19 @@
 import { readFileSync } from "node:fs"
 import { basename, dirname, join } from "node:path"
 import { exists, walk } from "./files.mjs"
-import { blankCode, plainName } from "./text.mjs"
+import { blankCode, lineOf, plainName } from "./text.mjs"
+import { SLUG } from "./vault-rules.mjs"
 
 const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+/** Every code file under the roots, with the skipped folders left out. */
+const codeFiles = (roots, skip, files) => {
+  const skipped = new Set(skip)
+  return roots
+    .filter((root) => exists(root))
+    .flatMap((root) => walk(root, skipped))
+    .filter((file) => files.test(file))
+}
 
 /**
  * Every name the vault answers to, and the notes that answer to it. A head is
@@ -87,9 +97,10 @@ export const checkPointers = (config, notes, decisions, report) => {
   const { decisionWords, files, marker, roots, skip } = config.pointers
   const { heads, names } = indexNames(config, notes)
 
-  /** A decision is named by its number. */
+  /** A decision is named by its number, or by its slug. */
+  const id = config.decisions.id === "number" ? "0*(\\d+)" : `(${SLUG})`
   const decision = new RegExp(
-    `^(?:${decisionWords.map(escape).join("|")})-?\\s*0*(\\d+)(?=$|[.;)]|[,:]?\\s+[a-z])`,
+    `^(?:${decisionWords.map(escape).join("|")})-?\\s*${id}(?=$|[.;)]|[,:]?\\s+[a-z])`,
     "i"
   )
 
@@ -142,15 +153,8 @@ export const checkPointers = (config, notes, decisions, report) => {
     "g"
   )
 
-  const skipped = new Set(skip)
   let count = 0
-  const codeFiles = roots
-    .filter((root) => exists(root))
-    .flatMap((root) => walk(root, skipped))
-  for (const file of codeFiles) {
-    if (!files.test(file)) {
-      continue
-    }
+  for (const file of codeFiles(roots, skip, files)) {
     for (const match of joinLines(readFileSync(file, "utf8")).matchAll(
       pointer
     )) {
@@ -168,4 +172,48 @@ export const checkPointers = (config, notes, decisions, report) => {
     }
   }
   return count
+}
+
+/**
+ * In slug mode a word such as «decision» before a slug names a decision, in
+ * code and in notes alike. The slug must belong to a live decision note. A
+ * merged decision leaves its slug behind, and this finds every place that
+ * still names it.
+ */
+export const checkDecisionRefs = (config, vault, decisions, report) => {
+  const { joins, words } = config.decisions
+  const list = `${SLUG}(?:(?:,\\s*|,?\\s+(?:${joins.map(escape).join("|")})\\s+)${SLUG})*`
+  const mention = new RegExp(
+    `(?<![\\p{L}\\p{N}_-])(?:${words.map(escape).join("|")})[-\\s]+(${list})`,
+    "giu"
+  )
+  const check = (file, text) => {
+    for (const match of text.matchAll(mention)) {
+      const slugs = match[1].match(new RegExp(SLUG, "giu"))
+      // A capital starts a word of prose, not a slug.
+      if (slugs.some((slug) => slug !== slug.toLowerCase())) {
+        continue
+      }
+      for (const slug of slugs) {
+        if (!decisions.has(slug)) {
+          report.fail(
+            "decision-refs",
+            file,
+            `names decision ${slug}, and no decision note has it: line ${lineOf(text, match.index)}`
+          )
+        }
+      }
+    }
+  }
+  for (const note of [...vault.notes, ...vault.frozen]) {
+    if (!config.ruleNotes.includes(note.name)) {
+      check(note.file, blankCode(note.text))
+    }
+  }
+  if (config.pointers) {
+    const { files, roots, skip } = config.pointers
+    for (const file of codeFiles(roots, skip, files)) {
+      check(file, readFileSync(file, "utf8"))
+    }
+  }
 }
