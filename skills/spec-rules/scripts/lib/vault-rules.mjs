@@ -16,6 +16,21 @@ import { blankCode, lineOf } from "./text.mjs"
 /** A decision note: `ADR-024 Title.md` or `adr-024-title.md`. */
 export const DECISION_FILE = /^adr-0*(\d+)/i
 
+/**
+ * A decision slug: two or more kebab-case words, the first one starts with a
+ * letter. In slug mode a decision note is `ADR-<slug>.md` and nothing more.
+ */
+export const SLUG = "[a-z][a-z0-9]*(?:-[a-z0-9]+)+"
+const WHOLE_SLUG = new RegExp(`^${SLUG}$`)
+
+/** The id of a decision note, or null when the note holds no decision. */
+const decisionId = (config, note) => {
+  if (config.decisions.id === "number") {
+    return note.name.match(DECISION_FILE)?.[1] ?? null
+  }
+  return /^adr-/i.test(note.name) ? basename(note.name, ".md").slice(4) : null
+}
+
 /** Read the vault once. Every rule works on this. */
 export const readVault = (config) => {
   const isTemplate = (note) =>
@@ -98,6 +113,10 @@ const checkLinkStyle = (config, note, names, fail) => {
         `a Markdown link in a vault of wikilinks: ${target}`
       )
     }
+  }
+  // A slug is the whole name of its note, so only a number can stand alone.
+  if (config.decisions.id === "slug") {
+    return
   }
   const bare = [
     ...relativeLinks(text).map((target) => basename(target, ".md")),
@@ -304,25 +323,73 @@ const checkIndex = (config, notes, failAll) => {
   }
 }
 
-/** Every decision number, and the notes that carry it. */
-export const decisionNumbers = (notes) => {
+/** Every decision id, and the notes that carry it. */
+const decisionIds = (config, notes) => {
   const decisions = new Map()
   for (const note of notes) {
-    const number = note.name.match(DECISION_FILE)?.[1]
-    if (number) {
-      decisions.set(number, [...(decisions.get(number) ?? []), note.file])
+    const id = decisionId(config, note)
+    if (id) {
+      decisions.set(id, [...(decisions.get(id) ?? []), note.file])
     }
   }
   return decisions
 }
 
-/** 8. A decision number names one note. A repeat splits one decision in two. */
-const checkDecisionNumbers = (decisions, failAll) => {
-  for (const [number, files] of decisions) {
+/**
+ * The slugs a decision gave up: the first cell of each table row in the note
+ * that `decisions.retired` names. The cell holds slugs and nothing else, so a
+ * link in another table of that note is not read.
+ */
+const retiredSlugs = (config, failAll) => {
+  const slugs = new Set()
+  if (!config.decisions.retired) {
+    return slugs
+  }
+  const file = join(config.vault, config.decisions.retired)
+  if (!exists(file)) {
+    failAll("decision-number", `decisions.retired points at nothing: ${file}`)
+    return slugs
+  }
+  const { body } = readNote(file, config.vault)
+  const cell = new RegExp(`^${SLUG}(?:,\\s*${SLUG})*$`)
+  for (const row of body.matchAll(/^\|([^|\n]+)\|/gm)) {
+    const text = row[1].replace(/`/g, "").trim()
+    if (cell.test(text)) {
+      for (const slug of text.split(/,\s*/)) {
+        slugs.add(slug)
+      }
+    }
+  }
+  return slugs
+}
+
+/**
+ * 8. A decision id names one note. A repeat splits one decision in two. A slug
+ * has one shape, and a slug a decision gave up never comes back.
+ */
+const checkDecisionIds = (config, decisions, failAll) => {
+  const retired = retiredSlugs(config, failAll)
+  for (const [id, files] of decisions) {
+    const name =
+      config.decisions.id === "number"
+        ? `decision number ${id.padStart(3, "0")}`
+        : `decision slug ${id}`
     if (files.length > 1) {
       failAll(
         "decision-number",
-        `decision number ${number.padStart(3, "0")} is on ${files.length} notes: ${files.join(", ")}`
+        `${name} is on ${files.length} notes: ${files.join(", ")}`
+      )
+    }
+    if (config.decisions.id === "slug" && !WHOLE_SLUG.test(id)) {
+      failAll(
+        "decision-number",
+        `${files.join(", ")}: a decision note is named ADR-<slug>.md, with two kebab-case words or more`
+      )
+    }
+    if (retired.has(id)) {
+      failAll(
+        "decision-number",
+        `${name} was given up, see ${config.decisions.retired}: ${files.join(", ")}`
       )
     }
   }
@@ -382,9 +449,9 @@ export const checkVault = (config, vault, report) => {
   if (isOn(config, "index")) {
     checkIndex(config, vault.notes, failAll)
   }
-  const decisions = decisionNumbers(vault.notes)
+  const decisions = decisionIds(config, vault.notes)
   if (isOn(config, "decision-number")) {
-    checkDecisionNumbers(decisions, failAll)
+    checkDecisionIds(config, decisions, failAll)
   }
   return { decisions }
 }

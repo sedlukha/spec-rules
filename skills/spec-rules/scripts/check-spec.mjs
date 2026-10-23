@@ -11,7 +11,7 @@
 import { isOn } from "./lib/config.mjs"
 import { start } from "./lib/cli.mjs"
 import { checkLists } from "./lib/lists.mjs"
-import { checkPointers } from "./lib/pointers.mjs"
+import { checkDecisionRefs, checkPointers } from "./lib/pointers.mjs"
 import { createReport, printProblems } from "./lib/report.mjs"
 import { checkStatements } from "./lib/statements.mjs"
 import { checkVault } from "./lib/vault-rules.mjs"
@@ -29,6 +29,10 @@ const pointers =
   isOn(config, "pointers") && config.pointers
     ? checkPointers(config, vault.notes, decisions, report)
     : 0
+
+if (isOn(config, "decision-refs") && config.decisions.id === "slug") {
+  checkDecisionRefs(config, vault, decisions, report)
+}
 
 console.log(
   `checked ${vault.notes.length} notes and ${pointers} pointers from code`

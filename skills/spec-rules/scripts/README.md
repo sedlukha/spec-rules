@@ -56,7 +56,8 @@ vault, like a link: `../backlog`. A path to code is relative to the repo root.
 | `retired` | A retired thing named in a paragraph with no link to a note that explains its absence | — |
 | `layers` | A note outside the `layers`, other than `rootNotes` at the root | 20 |
 | `index` | Two index notes in one folder. With `requireIndex`, a folder with none | 1 |
-| `decision-number` | One decision number on two notes | 22 |
+| `decision-number` | One decision id on two notes. In slug mode also a file not named `ADR-<slug>.md`, and a slug from the `decisions.retired` table | 22 |
+| `decision-refs` | Slug mode only. A word of `decisions.words` before a slug that no decision note has, in a note or in code | 22 |
 | `future` | A deferred idea with no trigger, or with no link to a live note | 7 |
 | `statements` | One bold statement of `minWords` or more in two notes | Anti-patterns |
 | `pointers` | A pointer from code to the vault that names no place in it | — |
@@ -102,7 +103,15 @@ decision and holds none.
 Each step after an arrow must name a place inside the step before it. A name is
 a note, a folder, a heading, a bold statement, the first cell of a table row, a
 check line id, or the words of a link to a note. A decision is named by its
-number, such as `ADR-042`. The marker is the vault path in backticks.
+number, such as `ADR-042`, or by its slug in slug mode, such as
+`ADR-head-only`. The marker is the vault path in backticks.
+
+**`decision-refs`.** A vault of slugs is checked wider than a pointer. Each
+word of `decisions.words` before a slug names a decision: `decision head-only`,
+or `decisions head-only and tile-is-photo`. Every note and every code file is
+read. A slug that no decision note has fails. So a merged decision leaves no
+stale name behind. A capital letter starts prose, not a slug, so
+`Decision Next-Step` is not read.
 
 ## The check lists
 
