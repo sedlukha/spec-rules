@@ -112,6 +112,17 @@ const tableToList = (rows) => {
     .join("\n\n")
 }
 
+/**
+ * The line that opens a list made from a table right under another table. Two
+ * lists with only a blank line between them read as one list. The name of the
+ * first column says what the new items are. With no name, a comment still
+ * ends the first list.
+ */
+const leadLine = (header) => {
+  const name = cells(header)[0].replace(/[.:]$/, "")
+  return name ? `${name}:` : "<!-- -->"
+}
+
 /** The text with every table turned into a list. */
 export const convertTables = (text) => {
   const tables = findTables(text)
@@ -121,16 +132,34 @@ export const convertTables = (text) => {
   const lines = text.split("\n")
   const out = []
   let at = 0
+  let listBefore = false
   for (const { end, start } of tables) {
-    out.push(...lines.slice(at, start))
+    const between = lines.slice(at, start)
+    out.push(...between)
+    const list = tableToList(lines.slice(start, end))
+    // A table with no rows leaves nothing, and no extra blank lines either.
+    if (list === "") {
+      while (out.length > 0 && out.at(-1).trim() === "") {
+        out.pop()
+      }
+      if (end < lines.length && lines[end].trim() !== "") {
+        out.push("")
+      }
+      at = end
+      continue
+    }
     // A list needs a blank line on each side, or it joins the text around it.
     if (out.length > 0 && out.at(-1).trim() !== "") {
       out.push("")
     }
-    out.push(...tableToList(lines.slice(start, end)).split("\n"))
+    if (listBefore && between.every((line) => line.trim() === "")) {
+      out.push(leadLine(lines[start]), "")
+    }
+    out.push(...list.split("\n"))
     if (end < lines.length && lines[end].trim() !== "") {
       out.push("")
     }
+    listBefore = true
     at = end
   }
   out.push(...lines.slice(at))

@@ -127,7 +127,9 @@ diff before you commit. A second run changes nothing.
 **`tables`.** The fix turns each table into a list. The first cell of a row
 becomes the head of an item, in bold. Each other cell becomes a sub-item that
 starts with the name of its column. An empty cell is dropped. One blank line
-stands between two items. A bold head alone on its line is a name, so the
+stands between two items. Two tables with only a blank line between them would
+become one list. So the second list opens with a line that names its first
+column, such as `Rule:`. A table with no rows leaves nothing. A bold head alone on its line is a name, so the
 `statements` rule does not read it.
 
 **`sorted`.** The fix puts every list of the note in the order of its heads.
