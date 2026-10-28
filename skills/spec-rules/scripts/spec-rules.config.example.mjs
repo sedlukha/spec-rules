@@ -70,8 +70,9 @@ export default {
   // branches then never take the same next number.
   decisions: {
     id: "number",
-    // A note with a table. Its first column holds the slugs of merged and
-    // dropped decisions, and no new decision takes one.
+    // A note with a table or a list. The first cell of a row, or the head of
+    // an item, holds the slugs of merged and dropped decisions. No new
+    // decision takes one.
     retired: "core/decisions.md",
     words: ["ADR", "decision", "decisions"],
     joins: ["and", "or"],
@@ -89,6 +90,17 @@ export default {
     manualMark: "**Manual.**",
     tests: { roots: ["src", "e2e"] },
   },
+
+  // Three rules for a vault with many branches open at once. All three start
+  // off. `fix-spec.mjs` rewrites the notes to pass them.
+  tables: "forbidden",
+  sorted: {
+    // The alphabet of the heads.
+    locale: "en",
+    // Notes whose lists stay in order, such as a glossary.
+    notes: ["core/glossary.md"],
+  },
+  decisionIndex: true,
 
   // Turn single rules off by id. The README lists every id.
   rules: { "summary-forbidden": true },

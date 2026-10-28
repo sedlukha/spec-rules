@@ -14,6 +14,7 @@ import { isOn } from "./lib/config.mjs"
 import { checkLists } from "./lib/lists.mjs"
 import { checkDecisionRefs, checkPointers } from "./lib/pointers.mjs"
 import { createReport, printProblems } from "./lib/report.mjs"
+import { checkShape } from "./lib/shape.mjs"
 import { checkStatements } from "./lib/statements.mjs"
 import { checkVault } from "./lib/vault-rules.mjs"
 
@@ -23,6 +24,7 @@ const { config, vault } = await start(
 const report = createReport()
 
 const { decisions } = checkVault(config, vault, report)
+checkShape(config, vault.notes, report)
 if (isOn(config, "statements")) {
   checkStatements(config, vault.notes, report)
 }

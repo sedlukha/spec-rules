@@ -460,6 +460,9 @@ is a defect — see [Invariants](#invariants-machine-checkable).
 
 Indexes must be navigation hubs, not just file lists.
 
+A busy vault builds the list of its decision index with a script, see
+[Parallel branches merge clean](#parallel-branches-merge-clean).
+
 ### 9. Status separation
 
 Split docs by status:
@@ -1379,6 +1382,52 @@ decides the shape of every name below.
   term in `02-glossary.md`. The glossary is the ubiquitous language. An entity that
   is not in it is vocabulary that drifts.
 
+## Parallel branches merge clean
+
+A busy vault has many branches open at once. Git merges each one line by line,
+and a merge conflict stops the person who merges. Four habits keep the vault
+free of them. The first three are rules that a script checks. All three start
+off, and a vault turns them on in its config.
+
+What git does with two branches, measured with `git merge-file`:
+
+| What each branch does | Table | List, blank line between items |
+| --- | --- | --- |
+| Edits one of two rows side by side | conflict | clean |
+| Adds a row, at two different places | clean | clean |
+| Adds a row, at the same place | conflict | conflict |
+| Adds a row next to a row the other edits | conflict | conflict |
+
+**1. A list, not a table.** A table row sits right under its neighbour. Git
+reads two edits of neighbours as one change, and it stops. A blank line between
+two list items keeps them apart. So a busy vault writes lists. Each item opens
+with its name in bold. Each other fact is a sub-item that starts with its own
+name. The rule is `tables: "forbidden"`.
+
+**2. A register keeps its order.** A glossary, a list of numbers, a list of
+questions: every branch adds to them. An item added at the end meets every other
+item added at the end. In the order of their names, two new items land at two
+places. The rule is `sorted`. It names the notes, and the alphabet of the heads.
+
+**3. The decision index is built, not written.** Every decision adds a line to
+its index, and so every two decisions conflict. So a script builds that list
+from the notes: the title, the link and the `summary` of each. The lines go in
+the order of the file names. The rule is `decisionIndex: true`. Never edit the
+list by hand. Change the decision note instead, and run the script.
+
+**4. A mass edit is a script in a short branch.** A sweep across many notes is
+a new link format, a renamed term, or a new shape of a note. Such a sweep meets
+every branch that is open. So write it as a script, never by hand. Run it in a
+branch of its own, and merge that branch the same day. Put the command in the
+commit message. A branch that then conflicts takes its own side of each
+conflict, and runs the script again. The script gives the same result on
+either side.
+
+`scripts/fix-spec.mjs` is the script for the first three rules. It turns each
+table into a list, sorts the registers, and builds each decision index. **A
+conflict in such a note is never solved by hand.** Take either side, run the
+fix, and commit what it writes.
+
 ## Link style
 
 **Repo mode uses relative Markdown links.** They render everywhere: in Obsidian,
@@ -1478,7 +1527,7 @@ node .claude/skills/spec-rules/scripts/check-spec.mjs
 
 It needs only Node. It checks the invariants a script can read, and the check
 lists against the tests. `scripts/README.md` names each rule and the invariant
-behind it.
+behind it. `scripts/fix-spec.mjs` rewrites the notes for the three merge rules.
 
 **The rules live in the script. The data of one vault lives in its own repo.**
 That data is the layers, the retired names, the wording that repeats on purpose

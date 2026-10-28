@@ -3,10 +3,12 @@
 // walk would read it as a pointer.
 //
 // A renamed heading kills such a pointer, and nothing else notices. The name
-// must be a heading, a bold statement, a table rule, a note or a decision.
+// must be a heading, a bold statement, a table rule, the head of a list item,
+// a note or a decision.
 
 import { readFileSync } from "node:fs"
 import { basename, dirname, join } from "node:path"
+import { itemHeads } from "./blocks.mjs"
 import { exists, walk } from "./files.mjs"
 import { blankCode, lineOf, plainName } from "./text.mjs"
 import { SLUG } from "./vault-rules.mjs"
@@ -66,6 +68,10 @@ const indexNames = (config, notes) => {
     // A rule of a table stands in the first cell of its row.
     for (const match of text.matchAll(/^\|\s*([^|\n]+?)\s*\|/gm)) {
       add(plainName(match[1]), note.file)
+    }
+    // A vault of lists keeps the same rule in the head of a list item.
+    for (const head of itemHeads(text)) {
+      add(head, note.file)
     }
     // The vault names a note by the words of every link to it.
     for (const match of text.matchAll(
