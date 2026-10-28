@@ -35,8 +35,9 @@ export const CONFIG_FILE = "spec-rules.config.mjs"
  * @property {{id: "number" | "slug", retired: string | null, words: string[], joins: string[]}} decisions How a
  *   decision is named. A number is `ADR-024`. A slug is a short kebab-case name
  *   of two words or more, `ADR-head-only`, and the file holds nothing else.
- *   `retired` is a note with a table: its first column holds the slugs of
- *   decisions that were merged or dropped. No new decision takes one of them.
+ *   `retired` is a note with a table or a list. The first cell of a row, or
+ *   the head of an item, holds the slugs of decisions that were merged or
+ *   dropped. No new decision takes one of them.
  *   In slug mode a word of `words` before a slug names a decision, in code and
  *   in notes. `joins` link the slugs of a list: `decisions a-b and c-d`.
  * @property {string[]} goneFields Header fields the vault dropped. A layered
@@ -68,6 +69,12 @@ export const CONFIG_FILE = "spec-rules.config.mjs"
  *   Code points at the vault with the marker, an arrow and a name.
  * @property {{command: string, dir: string, nameSuffix: string, manualMark: string | null, idLength: number, tests: {roots: string[], skip: string[], testFile: RegExp, storyFile: RegExp}} | null} lists
  *   Check lists, and the tests that close their lines.
+ * @property {"allowed" | "forbidden"} tables Whether a live note may hold a
+ *   table. Git merges a list with a blank line between items better.
+ * @property {{locale: string, notes: string[]}} sorted Notes whose lists stay
+ *   in the order of their heads. A new item then lands in its own place.
+ * @property {boolean} decisionIndex Each folder of decision notes keeps a
+ *   generated list of them in its index note.
  * @property {Record<string, boolean>} rules Set a rule to `false` to turn it off.
  */
 
@@ -133,12 +140,16 @@ export const RULES = [
   "statements",
   "pointers",
   "lists",
+  "tables",
+  "sorted",
+  "decision-index",
 ]
 
 /** The values a vault gets when its config is silent. */
 const defaults = (vault, naming, raw) => {
   const names = NAMES[naming]
   return {
+    decisionIndex: false,
     decisionStatuses: ["accepted", "proposed", "rejected"],
     decisions: {
       id: "number",
@@ -189,10 +200,12 @@ const defaults = (vault, naming, raw) => {
     rootNotes: [names.home, "AGENTS.md"],
     ruleNotes: ["AGENTS.md"],
     rules: {},
+    sorted: { locale: "en", notes: [] },
     statements: { minWords: 4, repeatsOnPurpose: [] },
     statuses: ["current", "future", "archive"],
     summaryForbidden: [],
     summaryWords: 20,
+    tables: "allowed",
     templates: ["templates", "Templates"],
     vault,
   }
@@ -205,6 +218,7 @@ const GROUPS = [
   "lists",
   "openQuestions",
   "pointers",
+  "sorted",
   "statements",
 ]
 
@@ -253,6 +267,9 @@ export const mergeConfig = (raw = {}, fallbackVault = "docs/spec") => {
   }
   if (!["markdown", "wikilink"].includes(config.links)) {
     fail(`links is "${config.links}". Take "markdown" or "wikilink".`)
+  }
+  if (!["allowed", "forbidden"].includes(config.tables)) {
+    fail(`tables is "${config.tables}". Take "allowed" or "forbidden".`)
   }
   if (!["number", "slug"].includes(config.decisions?.id)) {
     fail(`decisions.id is "${config.decisions?.id}". Take "number" or "slug".`)

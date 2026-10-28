@@ -12,7 +12,12 @@ export const checkStatements = (config, notes, report) => {
     if (config.ruleNotes.includes(note.name)) {
       continue
     }
-    const text = blankCode(note.text)
+    // A list item that is bold and nothing else is the name of a row, like
+    // the first cell of a table. A name may stand in many notes.
+    const text = blankCode(note.text).replace(
+      /^([-*][ \t]+)\*\*([^\n]+)\*\*[ \t]*$/gm,
+      (_, mark, name) => `${mark}  ${name}  `
+    )
     for (const match of text.matchAll(/\*\*(.+?)\*\*/gs)) {
       // Bold ends at a blank line. A span that holds one is two stars, not bold.
       if (match[1].includes("\n\n")) {

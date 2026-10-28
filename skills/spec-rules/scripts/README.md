@@ -9,6 +9,7 @@ node scripts/check-spec.mjs            # the whole vault, the lists in counts
 node scripts/check-lists.mjs           # the check lists against the tests
 node scripts/check-lists.mjs --all     # every line with no test, and free ids
 node scripts/check-lists.mjs CHK       # one list, and five free ids for it
+node scripts/fix-spec.mjs              # rewrite notes for the merge rules
 ```
 
 Run them from the repo root. The skill is often installed under
@@ -62,9 +63,13 @@ vault, like a link: `../backlog`. A path to code is relative to the repo root.
 | `statements` | One bold statement of `minWords` or more in two notes | Anti-patterns |
 | `pointers` | A pointer from code to the vault that names no place in it | — |
 | `lists` | A check list outside its folder, a line with no id, an id used twice, a tag that names no line or stands where no test reads it | 23 |
+| `tables` | With `tables: "forbidden"`, a table in a live note | Merge clean |
+| `sorted` | A list in a note of `sorted.notes` whose heads are out of order | Merge clean |
+| `decision-index` | With `decisionIndex: true`, an index whose generated list differs from the decision notes | Merge clean |
 
 A dash means the rule comes from a vault, not from the skill. Its data starts
-empty, so it fails nothing until a vault fills it.
+empty, so it fails nothing until a vault fills it. The three merge rules start
+off too.
 
 Turn a rule off with `rules: { "retired": false }`. Turn a whole group off with
 `null`, such as `lists: null`.
@@ -81,7 +86,8 @@ one vault. The scripts leave these to a reader: 4, 5, 6, 8, 9, 12 to 19, and 24.
 **`retired`.** A decision takes something away, and its name lives on in other
 notes. Each entry holds a pattern and the notes that explain the absence. The
 paragraph that names the thing must link one of those notes. A table counts as
-one paragraph, so a row carries its own link. The header is skipped: no
+one paragraph, so a row carries its own link. A list item with its sub-items
+is one paragraph too. The header is skipped: no
 renderer turns a field into a link.
 
 Spell out every letter class in a pattern. In JavaScript `\w` and `\b` know only
@@ -112,6 +118,37 @@ or `decisions head-only and tile-is-photo`. Every note and every code file is
 read. A slug that no decision note has fails. So a merged decision leaves no
 stale name behind. A capital letter starts prose, not a slug, so
 `Decision Next-Step` is not read.
+
+## The merge rules, and the script that fixes them
+
+Each merge rule has a fix. `fix-spec.mjs` rewrites the notes, and you read the
+diff before you commit. A second run changes nothing.
+
+**`tables`.** The fix turns each table into a list. The first cell of a row
+becomes the head of an item, in bold. Each other cell becomes a sub-item that
+starts with the name of its column. An empty cell is dropped. One blank line
+stands between two items. Two tables with only a blank line between them would
+become one list. So the second list opens with a line that names its first
+column, such as `Rule:`. A table with no rows leaves nothing. A bold head alone on its line is a name, so the
+`statements` rule does not read it.
+
+**`sorted`.** The fix puts every list of the note in the order of its heads.
+`sorted.locale` sets the alphabet, such as `"en"` or `"ru"`. An item moves with
+all its lines.
+
+**`decision-index`.** The index of a folder of decisions holds two marker lines:
+
+```markdown
+<!-- decision-index -->
+<!-- /decision-index -->
+```
+
+The fix writes one item per decision between them: the title from the `#`
+heading, a link, and the `summary`. The items go in the order of the file
+names. An index with no markers gets them at its end.
+
+**After a merge conflict in such a note,** take either side. Then run the fix
+and commit what it writes.
 
 ## The check lists
 

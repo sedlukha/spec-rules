@@ -95,6 +95,13 @@ The rules live in the script. The data of one vault lives in
 `spec-rules.config.mjs` in the vault's repo. See
 [`skills/spec-rules/scripts/README.md`](skills/spec-rules/scripts/README.md).
 
+A busy vault can also turn on three rules that keep parallel branches free of
+merge conflicts. A second script rewrites the notes to pass them:
+
+```bash
+node .claude/skills/spec-rules/scripts/fix-spec.mjs
+```
+
 ## The one-line summary
 
 ```

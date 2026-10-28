@@ -2,6 +2,7 @@
 // config can turn it off: `rules: { "retired": false }`.
 
 import { basename, dirname, join } from "node:path"
+import { itemHeads } from "./blocks.mjs"
 import { isOn } from "./config.mjs"
 import {
   exists,
@@ -24,7 +25,7 @@ export const SLUG = "[a-z][a-z0-9]*(?:-[a-z0-9]+)+"
 const WHOLE_SLUG = new RegExp(`^${SLUG}$`)
 
 /** The id of a decision note, or null when the note holds no decision. */
-const decisionId = (config, note) => {
+export const decisionId = (config, note) => {
   if (config.decisions.id === "number") {
     return note.name.match(DECISION_FILE)?.[1] ?? null
   }
@@ -343,8 +344,8 @@ const decisionIds = (config, notes) => {
 
 /**
  * The slugs a decision gave up: the first cell of each table row in the note
- * that `decisions.retired` names. The cell holds slugs and nothing else, so a
- * link in another table of that note is not read.
+ * that `decisions.retired` names, or the head of each list item. The cell holds
+ * slugs and nothing else, so a link in another row of that note is not read.
  */
 const retiredSlugs = (config, failAll) => {
   const slugs = new Set()
@@ -358,8 +359,12 @@ const retiredSlugs = (config, failAll) => {
   }
   const { body } = readNote(file, config.vault)
   const cell = new RegExp(`^${SLUG}(?:,\\s*${SLUG})*$`)
-  for (const row of body.matchAll(/^\|([^|\n]+)\|/gm)) {
-    const text = row[1].replace(/`/g, "").trim()
+  const heads = [
+    ...[...body.matchAll(/^\|([^|\n]+)\|/gm)].map((row) => row[1]),
+    ...itemHeads(body),
+  ]
+  for (const head of heads) {
+    const text = head.replace(/[`*]/g, "").trim()
     if (cell.test(text)) {
       for (const slug of text.split(/,\s*/)) {
         slugs.add(slug)
