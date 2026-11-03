@@ -16,7 +16,7 @@ import { SLUG } from "./vault-rules.mjs"
 const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
 /** Every code file under the roots, with the skipped folders left out. */
-const codeFiles = (roots, skip, files) => {
+export const codeFiles = (roots, skip, files) => {
   const skipped = new Set(skip)
   return roots
     .filter((root) => exists(root))
@@ -96,7 +96,7 @@ const AFTER_NAME = /^(?:$|[.;!?)»]|[,:]?\s+[a-z]|\s[—–]\s+[a-z])/
  * A comment wraps over lines. The markers at the start of each line are not
  * words, so the pointer is read with them taken out.
  */
-const joinLines = (text) =>
+export const joinLines = (text) =>
   text.replace(/\s*\n\s*(?:\/\/|\*(?!\/)|\{\/\*)?\s*/g, " ")
 
 export const checkPointers = (config, notes, decisions, report) => {
@@ -183,31 +183,40 @@ export const checkPointers = (config, notes, decisions, report) => {
 }
 
 /**
- * In slug mode a word such as «decision» before a slug names a decision, in
- * code and in notes alike. The slug must belong to a live decision note. A
- * merged decision leaves its slug behind, and this finds every place that
- * still names it.
+ * Every place where a word of `decisions.words` names slugs, such as
+ * `decisions a-b and c-d`. A capital starts a word of prose, not a slug, so
+ * such a place is left out.
  */
-export const checkDecisionRefs = (config, vault, decisions, report) => {
+export const slugMentions = (config, text) => {
   const { joins, words } = config.decisions
   const list = `${SLUG}(?:(?:,\\s*|,?\\s+(?:${joins.map(escape).join("|")})\\s+)${SLUG})*`
   const mention = new RegExp(
     `(?<![\\p{L}\\p{N}_-])(?:${words.map(escape).join("|")})[-\\s]+(${list})`,
     "giu"
   )
+  return [...text.matchAll(mention)]
+    .map((match) => ({
+      index: match.index,
+      slugs: match[1].match(new RegExp(SLUG, "giu")),
+    }))
+    .filter(({ slugs }) => slugs.every((slug) => slug === slug.toLowerCase()))
+}
+
+/**
+ * In slug mode a word such as «decision» before a slug names a decision, in
+ * code and in notes alike. The slug must belong to a live decision note. A
+ * merged decision leaves its slug behind, and this finds every place that
+ * still names it.
+ */
+export const checkDecisionRefs = (config, vault, decisions, report) => {
   const check = (file, text) => {
-    for (const match of text.matchAll(mention)) {
-      const slugs = match[1].match(new RegExp(SLUG, "giu"))
-      // A capital starts a word of prose, not a slug.
-      if (slugs.some((slug) => slug !== slug.toLowerCase())) {
-        continue
-      }
+    for (const { index, slugs } of slugMentions(config, text)) {
       for (const slug of slugs) {
         if (!decisions.has(slug)) {
           report.fail(
             "decision-refs",
             file,
-            `names decision ${slug}, and no decision note has it: line ${lineOf(text, match.index)}`
+            `names decision ${slug}, and no decision note has it: line ${lineOf(text, index)}`
           )
         }
       }

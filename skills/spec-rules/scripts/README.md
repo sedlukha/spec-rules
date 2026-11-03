@@ -23,6 +23,9 @@ Both scripts exit with 1 when they find a problem, and with 2 when the config is
 wrong. Each problem ends with the id of its rule in brackets, such as
 `[retired]`.
 
+A warning is a signal, not a problem. It prints after the problems under its
+own heading, with a count. It never changes the exit code.
+
 ## The rules live here, the data lives in the vault's repo
 
 A vault has its own data: its layers, its retired names, its own language. That
@@ -66,10 +69,12 @@ vault, like a link: `../backlog`. A path to code is relative to the repo root.
 | `tables` | With `tables: "forbidden"`, a table in a live note | Merge clean |
 | `sorted` | A list in a note of `sorted.notes` whose heads are out of order | Merge clean |
 | `decision-index` | With `decisionIndex: true`, an index whose generated list differs from the decision notes | Merge clean |
+| `decision-in-code` | Warning, slug mode only. A decision of `decisions.unnamedInCode.layers` that no code file names. Fails on an `allow` entry that is no live decision of those layers, or that code names | A script checks them |
+| `budgets` | Warning. A note longer than its budget in `budgets`: `<file>: N lines, budget M` | A script checks them |
 
 A dash means the rule comes from a vault, not from the skill. Its data starts
 empty, so it fails nothing until a vault fills it. The three merge rules start
-off too.
+off too, and so do the two warnings.
 
 Turn a rule off with `rules: { "retired": false }`. Turn a whole group off with
 `null`, such as `lists: null`.
@@ -118,6 +123,42 @@ or `decisions head-only and tile-is-photo`. Every note and every code file is
 read. A slug that no decision note has fails. So a merged decision leaves no
 stale name behind. A capital letter starts prose, not a slug, so
 `Decision Next-Step` is not read.
+
+## Two warnings
+
+A warning asks for a small cut during normal work. Without it, a vault grows
+until it needs a big cleanup, and a big cleanup loses rules.
+
+**`decision-in-code`.** A decision of a code layer should show in the code. A
+code file names it the way `decision-refs` reads a name: a word of
+`decisions.words` before the slug. A comment may wrap between the two. Only
+the files of `pointers` are read, so a file outside `pointers.files` names
+nothing. A decision with no name in code may hold a rule the code never
+follows. Read it, then cut it, or name it in the code that does the work.
+
+```js
+decisions: {
+  id: "slug",
+  unnamedInCode: { layers: ["code"], allow: ["build-on-node"] },
+},
+```
+
+`layers` lists the layer folders to read. Null reads every layer. `allow` lists
+decisions that need no name in code, such as a choice of a tool. An entry that
+excuses nothing fails the run, so no dead entry stays. The rule reads slugs
+only. A vault of numbered decisions skips it.
+
+**`budgets`.** A long note holds more than one subject, or a copy of another
+note. The script counts the lines of the whole file.
+
+```js
+budgets: { decision: 120, folders: { entities: 150 } },
+```
+
+`decision` is the budget of a decision note. `folders` gives a budget to every
+note inside a folder of that name, at any depth. A decision note inside such a
+folder takes `decision`. Index notes, registers, the `decisions.retired` note
+and rule notes are not measured.
 
 ## The merge rules, and the script that fixes them
 

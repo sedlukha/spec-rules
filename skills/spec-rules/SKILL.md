@@ -203,6 +203,20 @@ A note that holds sections of two owners is cut.
 A screen is not cut in half. It stays one design note, and only whole sections
 with another owner leave it.
 
+### A cut never deletes the only copy
+
+"This is a copy, the owner is X" is a claim. Check it before you delete.
+One vault lost dozens of live rules this way. Nobody opened X. X held the
+topic, but not the rule.
+
+1. Open the owner. Find the same rule there, with its number and its reason.
+2. The owner does not hold it? Move the rule there, or keep it where it is.
+3. Before you keep a rule, check the code. A rule the code does not follow is
+   a question, not a rule.
+4. After a cut of many notes, a fresh agent checks the result. It is not the
+   agent that cut. It compares the vault with the version before the cut.
+   Every rule, number, trap and rejected way has a new home or a reason.
+
 ### Layered layout
 
 ```text
@@ -1553,6 +1567,14 @@ from the skill, and the next change in the skill never reaches it.
 Where the vault's `AGENTS.md` differs from an invariant, the config says so too.
 A rule turns off with `rules: { "<id>": false }`.
 
+**Two warnings ask for a small cut during normal work.** A big cleanup loses rules.
+Both start off, and a warning never fails the run.
+
+- `decisions.unnamedInCode` names a code decision that no code file names. It
+  may hold a rule the code never follows.
+- `budgets` names a note longer than its budget in lines. It may hold two
+  subjects, or a copy of another note.
+
 ## Anti-patterns
 
 Do not:
@@ -1589,6 +1611,7 @@ Do not:
 - force every link to go one way between layers;
 - put a check list beside the note it checks, outside `qa/`;
 - cut a mixed note and leave an empty heading with only a pointer under it;
+- delete a rule as "a copy" without opening its owner and finding it there;
 - add a header field that no script reads, or bring `type` back.
 
 ## Final idea

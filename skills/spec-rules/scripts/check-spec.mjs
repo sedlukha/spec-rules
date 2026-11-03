@@ -15,6 +15,7 @@ import { checkLists } from "./lib/lists.mjs"
 import { checkDecisionRefs, checkPointers } from "./lib/pointers.mjs"
 import { createReport, printProblems } from "./lib/report.mjs"
 import { checkShape } from "./lib/shape.mjs"
+import { checkSignals } from "./lib/signals.mjs"
 import { checkStatements } from "./lib/statements.mjs"
 import { checkVault } from "./lib/vault-rules.mjs"
 
@@ -36,6 +37,7 @@ const pointers =
 if (isOn(config, "decision-refs") && config.decisions.id === "slug") {
   checkDecisionRefs(config, vault, decisions, report)
 }
+checkSignals(config, vault.notes, decisions, report)
 
 console.log(
   `checked ${vault.notes.length} notes and ${pointers} pointers from code`
@@ -45,4 +47,4 @@ if (isOn(config, "lists") && config.lists) {
   console.log(checkLists(config, vault.notes, report).join("\n"))
 }
 
-process.exitCode = printProblems(report.problems)
+process.exitCode = printProblems(report.problems, report.warnings)

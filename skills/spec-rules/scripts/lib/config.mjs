@@ -23,6 +23,22 @@ export const CONFIG_FILE = "spec-rules.config.mjs"
  */
 
 /**
+ * @typedef {object} UnnamedInCode Slug mode only. A decision of these layers
+ *   that no code file names is a warning.
+ * @property {string[] | null} layers The layer folders to read. Null: all.
+ * @property {string[]} allow Slugs that need no name in code. A slug here
+ *   that is not a live decision, or that code names, is a problem.
+ */
+
+/**
+ * @typedef {object} Budgets The longest note of a kind, in lines. A longer
+ *   note is a warning. Index notes and registers are not measured.
+ * @property {number | null} decision The budget of a decision note.
+ * @property {Record<string, number>} folders The budget of a note inside a
+ *   folder of this name, such as an entity folder.
+ */
+
+/**
  * @typedef {object} Config
  * @property {string} vault The folder of the live vault, from the repo root.
  * @property {"repo" | "obsidian"} naming Names in kebab-case, or in Title Case
@@ -32,7 +48,7 @@ export const CONFIG_FILE = "spec-rules.config.mjs"
  *   as `AGENTS.md`. They show links by example, so content rules skip them.
  * @property {string[]} statuses The closed list for `status`.
  * @property {string[]} decisionStatuses The closed list for `decision_status`.
- * @property {{id: "number" | "slug", retired: string | null, words: string[], joins: string[]}} decisions How a
+ * @property {{id: "number" | "slug", retired: string | null, words: string[], joins: string[], unnamedInCode: UnnamedInCode | null}} decisions How a
  *   decision is named. A number is `ADR-024`. A slug is a short kebab-case name
  *   of two words or more, `ADR-head-only`, and the file holds nothing else.
  *   `retired` is a note with a table or a list. The first cell of a row, or
@@ -40,6 +56,7 @@ export const CONFIG_FILE = "spec-rules.config.mjs"
  *   dropped. No new decision takes one of them.
  *   In slug mode a word of `words` before a slug names a decision, in code and
  *   in notes. `joins` link the slugs of a list: `decisions a-b and c-d`.
+ *   `unnamedInCode` warns about a decision that no code file names.
  * @property {string[]} goneFields Header fields the vault dropped. A layered
  *   vault drops `type` by default.
  * @property {number} summaryWords The longest `summary`, in words.
@@ -75,6 +92,7 @@ export const CONFIG_FILE = "spec-rules.config.mjs"
  *   in the order of their heads. A new item then lands in its own place.
  * @property {boolean} decisionIndex Each folder of decision notes keeps a
  *   generated list of them in its index note.
+ * @property {Budgets | null} budgets How long a note may grow. Null: off.
  * @property {Record<string, boolean>} rules Set a rule to `false` to turn it off.
  */
 
@@ -143,18 +161,22 @@ export const RULES = [
   "tables",
   "sorted",
   "decision-index",
+  "decision-in-code",
+  "budgets",
 ]
 
 /** The values a vault gets when its config is silent. */
 const defaults = (vault, naming, raw) => {
   const names = NAMES[naming]
   return {
+    budgets: null,
     decisionIndex: false,
     decisionStatuses: ["accepted", "proposed", "rejected"],
     decisions: {
       id: "number",
       joins: ["and", "or"],
       retired: null,
+      unnamedInCode: null,
       words: ["ADR", "decision", "decisions"],
     },
     forbiddenHeadings: [],
@@ -226,6 +248,16 @@ const fail = (message) => {
   throw new Error(`spec-rules config: ${message}`)
 }
 
+/** A group under a group: the keys it names over its own defaults. */
+const deepGroup = (name, base, raw) => {
+  for (const key of Object.keys(raw)) {
+    if (!(key in base)) {
+      fail(`unknown key "${name}.${key}"`)
+    }
+  }
+  return { ...base, ...raw }
+}
+
 /**
  * The config of the vault: the file merged over the defaults. A key the
  * scripts do not know is an error, so a typo never turns a rule off quietly.
@@ -273,6 +305,21 @@ export const mergeConfig = (raw = {}, fallbackVault = "docs/spec") => {
   }
   if (!["number", "slug"].includes(config.decisions?.id)) {
     fail(`decisions.id is "${config.decisions?.id}". Take "number" or "slug".`)
+  }
+  // Two groups one level deeper. Each starts off, and an object turns it on.
+  if (config.decisions.unnamedInCode) {
+    config.decisions.unnamedInCode = deepGroup(
+      "decisions.unnamedInCode",
+      { allow: [], layers: null },
+      config.decisions.unnamedInCode
+    )
+  }
+  if (config.budgets) {
+    config.budgets = deepGroup(
+      "budgets",
+      { decision: null, folders: {} },
+      config.budgets
+    )
   }
   config.index = NAMES[naming].index
   return config

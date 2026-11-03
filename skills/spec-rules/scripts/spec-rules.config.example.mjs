@@ -76,7 +76,14 @@ export default {
     retired: "core/decisions.md",
     words: ["ADR", "decision", "decisions"],
     joins: ["and", "or"],
+    // Slug mode only, off by default. A warning names each decision of these
+    // layers that no code file names. `allow` needs no name in code.
+    unnamedInCode: { layers: ["code"], allow: ["build-on-node"] },
   },
+
+  // Off by default. A warning names a note longer than its budget, in lines.
+  // `folders` gives a budget to every note inside a folder of that name.
+  budgets: { decision: 120, folders: { entities: 150 } },
 
   pointers: {
     roots: ["src"],
