@@ -106,7 +106,7 @@ and its `AGENTS.md` says so.
 
 | Layer | Owner | What it holds |
 | --- | --- | --- |
-| `core/` | everybody | the glossary, shared numbers, decision numbers, open questions |
+| `core/` | everybody | the glossary, shared numbers, decision numbers, the entry to open questions |
 | `product/` | the product manager | who it is for, the release, money, the user journey, scenarios |
 | `content/` | the editor or marketing | what a person reads: interface text, legal pages, arguments |
 | `design/` | the designer | screens, cross-screen rules, the visual system, accessibility |
@@ -132,7 +132,7 @@ it in that layer.
 - **Never retell a fact of another layer. Link it.** A copy between layers is the
   defect. The owner changes the fact, and the copy then lies.
 - **A change in another layer is a question, not an edit.** Write it in the open
-  questions register in `core/`. Its `Decides` column names the layer that owns
+  questions register of that layer. Its `Decides` line names the layer that owns
   the answer. The owner decides and edits.
 
 A strict link direction looks tidy. It was measured on a real vault and
@@ -213,9 +213,10 @@ project/
     00-core-index.md
     glossary.md
     decisions.md                      (numbering rule, holes, map)
-    open-questions.md                 (one register, a Decides column)
+    open-questions.md                 (the entry: links each layer register)
   product/
     00-product-index.md
+    open-questions.md                 (the questions this layer decides)
     user-scenarios/
     adr/
       00-product-adr-index.md
@@ -1224,12 +1225,25 @@ One shared list looks tidy and reads badly. A release blocker sits next to a que
 nobody will read for a year. The reader cannot tell them apart. The page then grows
 into a wall of text, and people stop using it.
 
-### In a layered vault the register lives in `core/`
+### In a layered vault each layer keeps its own register
 
-There is one register for all layers, `core/open-questions.md`. Every question
-names the layer that decides it, in a `Decides` column or line. A question to
-another layer is how you ask for a change there. You never edit that layer's
-note yourself.
+Each layer has its own `open-questions.md`, at the root of its folder. A
+question lives in the register of the layer that decides it. So each owner
+finds all of their questions in one place.
+
+- **Two layers decide it?** It lives in the first layer of its `Decides` line.
+  The line names both layers.
+- **`core/open-questions.md` is the entry.** It links every layer register and
+  explains the importance levels. It holds only a question that all layers
+  decide.
+- **A question to another layer is how you ask for a change there.** Write it
+  in the register of that layer. You never edit that layer's note yourself.
+- **Deferred questions stay in one note.** Nobody works on them now, so one
+  list outside the layers is enough.
+
+One register for all layers was the rule before. In one vault of 37
+questions, 23 belonged to the designer. Every other owner read through them to
+find their own few.
 
 ### Read the owner note's reasons before you file a question
 
@@ -1514,7 +1528,8 @@ A layered vault also adds these:
     every slug that a note or code names belongs to a live ADR, and no ADR
     takes a retired slug.
 23. A note with `checks:` in its header lives in `qa/`, and only there.
-24. Every question in the open questions register names the layer that decides it.
+24. Every question in an open questions register names the layer that decides it.
+    It lives in the register of the first layer it names.
 
 ### A script checks them
 
