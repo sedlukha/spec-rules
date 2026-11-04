@@ -1,1627 +1,214 @@
 ---
 name: spec-rules
-description: "Write a spec as a linked knowledge base of atomic notes — entities, scenarios, ADRs with supersession tracking, status separation, layers by owner, and embedded Mermaid diagrams. Use when writing, moving or cutting a note in a spec vault. That covers an entity, a scenario, a screen, an ADR, a check list, and an open question."
-allowed-tools: Read, Glob, Edit, Write, AskUserQuestion
+description: "Keep the spec next to the code. One CLAUDE.md per package that owns a part, reasons in code comments, numbers in constants, and a short product spec for people. Use when you write, move or cut a rule, a reason, a rejected way or a rule of absence. Also use when you edit a CLAUDE.md that describes a part of the product, or touch a docs/spec folder."
+allowed-tools: Read, Glob, Grep, Edit, Write, AskUserQuestion
 ---
 
-# spec-rules — specification as a linked knowledge base
+# spec-rules: the spec lives next to the code
 
 ## Core principle
 
-Treat any complex spec as a living knowledge base, not one big linear document.
-
-Instead of one huge file, build a system of linked notes:
-
-- current architecture;
-- future ideas;
-- user scenarios;
-- screens;
-- entities;
-- diagrams;
-- open questions;
-- architecture decisions;
-- rejected / superseded ideas;
-- roadmap;
-- glossary / ubiquitous language.
-
-The docs must answer not only "what are we building?" but also:
-
-- why this decision was made;
-- which alternatives were considered;
-- what is deferred to later;
-- what is no longer current;
-- which user scenarios are supported;
-- which screens exist, and which scenario reaches each one;
-- which entities take part in each scenario;
-- which diagrams explain the current model;
-- what must happen for a future idea to become a current decision.
-
-## A section is the unit of reading
-
-A note owns a topic, but nobody reads a whole note to answer one question. So find
-the heading first (`grep -n "^## "`), then read that range. One session read three
-long notes end to end for two sections, and paid about 15k tokens for the rest.
-
-This is a rule for writing a note too. Give every section a heading that names what
-it holds, and keep the section true on its own. A section that only makes sense
-after the ten above it forces the reader to take the whole file.
-
-## Pick the vault mode first
-
-The same notes can be stored in two shapes. Pick one before you write the first
-note. Write the choice in an ADR, and hold it. A vault that mixes the two is the
-drift half the rules below exist to prevent.
-
-**Repo mode is the default.** The vault lives in a git repo, and people read it
-on the forge as well: GitHub, GitLab, a pull request. Most vaults are this one.
-
-**Obsidian mode** is for a vault that lives in Obsidian and nowhere else.
-
-|            | Repo mode (default)                          | Obsidian mode             |
-| ---------- | -------------------------------------------- | ------------------------- |
-| Folders    | `user-scenarios/`                            | `User Scenarios/`         |
-| Notes      | `core-flow.md`                               | `Core Flow.md`            |
-| Index note | `00-adr-index.md`                            | `00 ADR Index.md`         |
-| ADR files  | `adr-024-short-title.md`                     | `ADR-024 Short Title.md`  |
-| Body links | `[ADR-024 …](../adr/adr-024-short-title.md)` | `[[ADR-024 Short Title]]` |
-
-Nothing else changes. The folders, the note types, the required sections, the
-supersession rules and the invariants are the same in both modes.
-
-Three reasons repo mode is the default:
-
-1. A forge shows a wikilink as plain `[[text]]`. Every such link is dead for a
-   reader who is not in Obsidian.
-2. A name with a space needs `%20` in every link that points at it.
-3. Many repos require kebab-case for every file. A vault in Title Case then
-   breaks a repo rule, and a repo rule rarely bends for one folder.
-
-What repo mode costs: Obsidian rewrites a `[[wikilink]]` for you when a note is
-renamed. Do not assume the same for a relative link. Check the inbound links
-after every rename, whatever your editor promises.
-
-**Every example below is written in repo mode.** Read the table to get the
-Obsidian form.
-
-## Split a growing vault into layers by owner
-
-A young vault has one owner, and it splits by status: `current/`, `future/`,
-`archive/`. That shape stays valid, and most of this skill describes it.
-
-A vault grows owners. A product manager, an editor, a designer and a tester
-start to write in it. Then split the live spec by **layer**. Each layer is
-one folder with one owner.
-
-**Read the vault's own `AGENTS.md` first.** It names the layers of that vault
-and their owners. No layers named there means the vault uses status folders.
-Then the rules in this section do not apply.
-
-**Where the vault's `AGENTS.md` differs from this skill, the vault wins.** That
-covers a rule, a note shape and an invariant.
-
-### The model
-
-A layered vault follows this model. A vault may rename, merge or drop a layer,
-and its `AGENTS.md` says so.
-
-| Layer | Owner | What it holds |
-| --- | --- | --- |
-| `core/` | everybody | the glossary, shared numbers, decision numbers, the entry to open questions |
-| `product/` | the product manager | who it is for, the release, money, the user journey, scenarios |
-| `content/` | the editor or marketing | what a person reads: interface text, legal pages, arguments |
-| `design/` | the designer | screens, cross-screen rules, the visual system, accessibility |
-| `code/` | the developer | data, entities, addresses, measurements |
-| `qa/` | the tester | check lists, one per part of the product |
-
-Only `00-home.md` and the vault `AGENTS.md` stand at the root. Every other note
-lives in a layer. Deferred ideas stay out of the layers. They keep their own
-`future/` folder, or a backlog beside the vault. The vault `AGENTS.md` says
-which.
-
-### A note goes to the one who can overturn it
-
-The topic does not decide. A price on the home page names a block on a screen.
-It is still a product decision. Ask who has the right to change the note. Put
-it in that layer.
-
-### Isolation is who edits, not who links
-
-- **Write only in your layer.** A task in one layer changes only that folder.
-- **A link may cross into any layer, in any direction.** A screen may link a
-  code decision as its reason. A code decision may link a scenario.
-- **Never retell a fact of another layer. Link it.** A copy between layers is the
-  defect. The owner changes the fact, and the copy then lies.
-- **A change in another layer is a question, not an edit.** Write it in the open
-  questions register of that layer. Its `Decides` line names the layer that owns
-  the answer. The owner decides and edits.
-
-A strict link direction looks tidy. It was measured on a real vault and
-rejected. Of about 2,000 cross-layer links, 1,113 went "up", from product
-towards code. No order of the layers brought that number under 955. A reason
-points wherever the reason is. A strict direction would throw those reasons away.
-
-### Decisions: one id across layers
-
-- An ADR lives in the `adr/` folder of its layer, such as `design/adr/`.
-- One set of ids covers every layer. Code writes "ADR-042" and finds one
-  note, whatever layer holds it.
-- A new ADR takes the next number after the largest in all `adr/` folders.
-- One note in `core/`, such as `core/decisions.md`, holds the numbering rule.
-  It also holds the table of holes and the map of how decisions depend on each
-  other. Each layer's `adr/` index lists only its own ADRs.
-
-**A busy vault names a decision by a slug, not a number.** Two branches that
-each add an ADR take the same next number. Each branch passes the check alone,
-and the duplicate shows only after both merge. A slug is a short kebab-case
-name of the decision, such as `head-only`. Two branches almost never pick the
-same one. The config turns it on with `decisions: { id: "slug" }`.
-
-- The file is `adr-<slug>.md` in repo mode and `ADR-<slug>.md` in Obsidian
-  mode. The title lives in the H1 and in the layer index, not in the file name.
-  So a new title breaks no link.
-- A slug has two words or more, and it never changes.
-- Code writes "decision head-only" or "ADR-head-only". Notes do the same in
-  their own language, such as a word set in `decisions.words`.
-- A merged or dropped decision leaves its slug in a table of the `core/` note.
-  `decisions.retired` names that note, and no new decision takes such a slug.
-
-### Check lists live only in `qa/`
-
-**A vault may hold no check lists.** Its config then sets `lists: null`. There,
-skip every check list rule in this skill. That covers this section, the "What to
-check" list of a screen note, the list at the end of an address note, and
-invariant 16. Never add a check list or a check id to such a vault.
-
-A tester checks one part of the product at a time. One list then holds its
-layout, its money rules and its storage. So a check list follows a part of the
-product, not an owner.
-
-- **One list per part of the product**, named after it: `qa/checkout-checks.md`.
-- **The `checks:` header field makes a note a list.** It holds the list's id
-  prefix, such as `checks: CHK`. A script finds lists by that field. A list
-  outside `qa/` is a defect.
-- **A long list takes `##` sections by part of the screen.** A section may name
-  a second owner in `code/`. It links the note that owns its rules.
-- **A list line says what must be true.** The reason lives with the owner of
-  the rule, and the line links to it.
-- **The note that a list checks keeps no check lines.** It has no "What to
-  check" heading either. It names its list in one line, under the parts table
-  or in "Related notes".
-
-### A mixed note is cut
-
-A note that holds sections of two owners is cut.
-
-1. Find each section with another owner.
-2. Move the whole section, word for word, to a note of that owner. Do not
-   rewrite while you move. A move and a rewrite in one step hide mistakes.
-3. Leave one link in the old note. Put it in a section that still has its
-   own content.
-4. Leave no empty heading behind with only a pointer under it. The reader opens
-   the heading and finds nothing.
-
-A screen is not cut in half. It stays one design note, and only whole sections
-with another owner leave it.
-
-### A cut never deletes the only copy
-
-"This is a copy, the owner is X" is a claim. Check it before you delete.
-One vault lost dozens of live rules this way. Nobody opened X. X held the
-topic, but not the rule.
-
-1. Open the owner. Find the same rule there, with its number and its reason.
-2. The owner does not hold it? Move the rule there, or keep it where it is.
-3. Before you keep a rule, check the code. A rule the code does not follow is
-   a question, not a rule.
-4. After a cut of many notes, a fresh agent checks the result. It is not the
-   agent that cut. It compares the vault with the version before the cut.
-   Every rule, number, trap and rejected way has a new home or a reason.
-
-### Layered layout
-
-```text
-project/
-  AGENTS.md                           (names the layers and owners)
-  00-home.md
-  core/
-    00-core-index.md
-    glossary.md
-    decisions.md                      (numbering rule, holes, map)
-    open-questions.md                 (the entry: links each layer register)
-  product/
-    00-product-index.md
-    open-questions.md                 (the questions this layer decides)
-    user-scenarios/
-    adr/
-      00-product-adr-index.md
-  content/
-  design/
-    screens/
-    screen-rules/
-    adr/
-  code/
-    entities/
-    data-model.md
-    routing.md
-    adr/
-  qa/
-    00-qa-index.md
-    how-we-check.md
-    checkout-checks.md
-```
-
-Every folder keeps its `00-` index. In Obsidian mode the folders are
-`Core/`, `Product/`, `QA/` and so on.
-
-## Use the full power of Obsidian
-
-Use everything Obsidian offers. Do not treat it as a plain folder of Markdown files.
-
-### 1. Internal links
-
-Link notes to each other. In repo mode a link is a relative Markdown link:
-
-```text
-[Order](../entities/order.md)
-[Customer](../entities/customer.md)
-[Complete checkout](../user-scenarios/complete-checkout.md)
-[ADR-003 Order versioning](../adr/adr-003-order-versioning.md)
-```
-
-In Obsidian mode the same links are short-name wikilinks:
-
-```text
-[[Order]]
-[[Customer]]
-[[User Scenario - Complete Checkout]]
-[[ADR-003 Order versioning]]
-```
-
-Every important entity, scenario, decision, or diagram must be a linkable object.
-
-### 2. Backlinks
-
-Design the docs so backlinks are useful.
-
-For example, when you open the `Order` note, you should see:
-
-- which scenarios use it;
-- which diagrams include it;
-- which ADRs affect it;
-- which future ideas propose to change it;
-- which open questions relate to it.
-
-### 3. Graph view
-
-The note structure must work well in graph view.
-
-Avoid isolated files. Link important notes to each other with meaningful links.
-
-Graph view should help you see:
-
-- central entities;
-- overloaded parts of the model;
-- weakly linked parts of the spec;
-- links between scenarios, entities, and architecture decisions.
-
-### 4. Tags
-
-Tags are optional. A tag that nobody filters by goes wrong quietly. Add one
-only when a search or a script reads it. A layered vault needs no type tag: the
-folder says what a note is.
-
-The values below are examples. Replace the domain-specific ones (the last block)
-with tags that fit your own stack:
-
-```text
-#current
-#future
-#archive
-#entity
-#scenario
-#screen
-#adr
-#diagram
-#open-question
-#decision
-#stage-1
-#stage-2-candidate
-#needs-review
-
-# domain/stack-specific examples — swap for your own:
-#infra
-#integration
-```
-
-Tags must help you filter the docs fast.
-
-### 5. Mermaid
-
-Use Mermaid for diagrams:
-
-- flowchart for processes;
-- erDiagram for data models;
-- stateDiagram for lifecycle;
-- sequenceDiagram for interactions;
-- classDiagram for object models when needed;
-- mindmap or graph for overview maps, if the environment supports them.
-
-Diagrams must not be the only form of docs. Every diagram needs:
-
-- purpose;
-- what matters;
-- how to read it;
-- limits;
-- related entities;
-- related scenarios;
-- related ADRs;
-- open questions.
-
-### 6. Properties / YAML frontmatter
-
-Use properties for machine-readable metadata. Keep the header short. **Add a
-field only when a script reads it on the same day.** A field nothing reads goes
-wrong quietly. A copy of the body in a field drifts away from the body.
-
-**The folder says what a note is, so no header holds `type`.** The layer, the
-`adr/` folder, the `00-` prefix and the `entities/` folder already say it. The
-field only repeats that, and after a move it lies.
-
-The header of a live note holds these fields, and no more:
-
-| Field | On which note | Values |
-| --- | --- | --- |
-| `status` | every note | `current`, `future`, `archive` |
-| `summary` | every note | one line, see below |
-| `decision_status` | an ADR | `proposed`, `accepted`, `rejected` |
-| `checks` | a check list | the id prefix of its lines, such as `CHK` |
-
-A deferred idea adds `trigger`, because a script checks that it has one.
-
-Example for a current entity:
-
-```yaml
----
-status: current
-summary: "Order: what it holds, how it is versioned, who may change it"
----
-```
-
-For a future idea:
-
-```yaml
----
-status: future
-trigger: "Need per-region tax metadata"
-summary: "Tax metadata per region. Waits for the second market"
----
-```
-
-**An older vault may still carry `type`, `tags`, `related` or `stage`.** Those
-fields stay valid in a status-folder vault. Do not add them to a new note. Drop
-them when the vault moves to layers, in one sweep with a script check.
-
-**Every note carries a `summary` line.** It says in one line what is inside the
-note.
-
-A title is too short to choose by. `Order` does not tell you whether the note
-holds the fields, the states, or the money rules. The first paragraph is too long
-to scan across fifty notes. The summary sits between them.
-
-It is the only field written for a reader who has not opened the file yet.
-
-Rules for a summary:
-
-- One line. Say what is inside, not why it matters.
-- Twenty words at most. A longer one stops being a summary.
-- Name the topics a reader would search for.
-- Write it in the language of the notes, not always in English.
-
-Two examples, one weak and one useful:
-
-```yaml
-summary: "This note is about the order entity"        # says nothing new
-summary: "Order: fields, states, and who may change a paid one"
-```
-
-A summary earns its keep when a script collects every line into one file. The
-reader then picks the right note from one page. Without that page a reader still
-gets a one-line answer to "what is in here?" at the top of every note.
-
-### 7. Templates
-
-Create and use note templates. This package ships ten in `templates/`:
-
-- `entity-template.md`;
-- `scenario-template.md`;
-- `screen-template.md`;
-- `adr-template.md`;
-- `diagram-template.md`;
-- `future-candidate-template.md`;
-- `open-questions-template.md` (the current note);
-- `deferred-questions-template.md` (the future note);
-- `routing-template.md` (the address note);
-- `check-list-template.md` (a list in `qa/`, layered vault only).
-
-No template writes `type`. Paths inside a template are written for a
-status-folder vault. In a layered vault, point them at the layer folders.
-
-Optional, not shipped (add a template file before referencing): Glossary Term,
-Pipeline / Process.
-
-### 8. Index / MOC notes
-
-Use MOC (Map of Content) notes. One index per folder, always named with the
-`00-` prefix so it sorts to the top:
-
-- `00-home.md`
-- `00-current-index.md`
-- `00-future-index.md`
-- `00-architecture-index.md`
-- `00-entity-index.md`
-- `00-scenario-index.md`
-- `00-screen-index.md`
-- `00-adr-index.md`
-- `00-diagram-index.md`
-
-(In Obsidian mode the prefix is `00 ` with a space: `00 ADR Index.md`.)
-
-A layered vault names each index after its folder: `00-core-index.md`,
-`00-design-index.md`, `00-design-adr-index.md`.
-
-Exactly one index file per folder, and `templates/` is the only folder without
-one. A second index, such as an empty `adr-index.md` next to `00-adr-index.md`,
-is a defect — see [Invariants](#invariants-machine-checkable).
-
-Indexes must be navigation hubs, not just file lists.
-
-A busy vault builds the list of its decision index with a script, see
-[Parallel branches merge clean](#parallel-branches-merge-clean).
-
-### 9. Status separation
-
-Split docs by status:
-
-```text
-current/
-future/
-archive/
-```
-
-- `current/` — the live spec;
-- `future/` — ideas, candidates, Stage 2+ guesses;
-- `archive/` — outdated, rejected, or superseded material.
-
-Do not mix live architecture and future ideas in one folder without a clear status.
-
-A layered vault splits the live spec by owner instead of keeping one
-`current/`. Status still holds. Every note keeps its `status` field. Deferred
-ideas stay out of the layers. See
-[Split a growing vault into layers by owner](#split-a-growing-vault-into-layers-by-owner).
-
-Open questions carry a status too, so they split the same way. See
-[Open questions: two notes, not one list](#open-questions-two-notes-not-one-list).
-
-**Archive trigger and tombstones.** A note moves to `archive/` when one of these is true:
-
-- its ADR Status becomes `Superseded` or `Rejected`;
-- its entity/scenario is fully replaced and nothing in `current/` links to it as live.
-
-When you archive a note, do **not** delete it silently. Leave a one-line **tombstone**
-in place of the old content (or at the top of the archived file) that points to the
-replacement, so backlinks and graph paths still resolve:
-
-```text
-> Archived 2026-06-23. Superseded by [ADR-024 Plan stored as a subtree](../current/adr/adr-024-plan-stored-as-a-subtree.md).
-```
-
-Archiving is a deliberate step, not a cleanup you skip. If superseded material stays in
-`current/`, it reads as live truth and misleads the next reader (this is the most common
-decay mode of a large vault).
-
-### 10. Progressive refinement
-
-The docs grow step by step:
-
-```text
-raw idea
-→ future candidate
-→ discussed option
-→ accepted ADR
-→ current specification
-→ implemented
-→ superseded/archive
-```
-
-Every idea must have a clear status.
-
-## Recommended vault structure
-
-This is the status-folder shape, for a vault with one owner. A vault with
-several owners uses the [layered layout](#layered-layout) instead.
-
-Every folder below holds its own index note. `templates/` is the one exception:
-it holds blank forms, and an index of blank forms helps nobody.
-
-```text
-project/
-  00-home.md
-  01-product-vision.md
-  02-glossary.md
-
-  current/
-    00-current-index.md
-    open-questions.md                 (questions this cycle answers)
-
-    architecture/
-      00-architecture-index.md
-      core-flow.md                      (holds a flow diagram)
-      core-domain-model.md
-      data-model.md                     (holds an ER diagram)
-      process-model.md                  (holds a pipeline diagram)
-      lifecycle-model.md                (holds a state diagram)
-      screen-rules.md                   (rules that cross screens)
-      routing.md                        (holds the address table)
-
-    entities/
-      00-entity-index.md
-
-    user-scenarios/
-      00-user-scenarios-index.md
-
-    screens/
-      00-screen-index.md
-
-    adr/
-      00-adr-index.md
-
-  future/
-    00-future-index.md
-    deferred-questions.md             (questions whose answer comes later)
-
-    architecture-ideas/
-      00-architecture-ideas-index.md
-    entity-candidates/
-      00-entity-candidates-index.md
-    user-scenarios/
-      00-future-scenarios-index.md
-    adr-candidates/
-      00-adr-candidates-index.md
-
-  archive/
-    00-archive-index.md
-    superseded-ideas/
-      00-superseded-ideas-index.md
-    old-drafts/
-      00-old-drafts-index.md
-
-  templates/
-    entity-template.md
-    scenario-template.md
-    adr-template.md
-    future-candidate-template.md
-    diagram-template.md
-    open-questions-template.md
-    deferred-questions-template.md
-    screen-template.md
-    routing-template.md
-```
-
-Start flat. A vault with four future ideas needs `future/` and its index, not
-four subfolders with four more indexes. Split a folder when it stops being
-readable in one screen, and give the new folder its index in the same edit.
-
-## Embed diagrams in architecture files
-
-**Do not create a separate `diagrams/` folder.**
-
-Embed each diagram in the file it explains:
-
-- **ER Diagram** → embed in `data-model.md` (with tables and rules explained)
-- **Workflow/Process diagrams** → embed in `process-model.md` or `core-flow.md`
-- **State diagrams** → embed in `lifecycle-model.md`
-- **Architecture diagrams** → embed in the matching `architecture/*.md`
-
-Each diagram must have, in the same file:
-
-- **Purpose** — what it explains
-- **Scope** — what is in / out
-- **Key takeaways** — main points
-- **Related entities** — links to entities
-- **Related scenarios** — links to scenarios
-- **Related ADR** — links to decisions
-
-### Why not a separate folder
-
-- **Navigation** — when you read about Data Model, you see the ER diagram right there
-- **Consistency** — the diagram stays current, next to its description
-- **Backlinks** — Entity → Architecture file with the diagram (no in-between folder)
-- **Updates** — change the architecture → update the diagram in one place
-- **Graph view** — links between components are clearer
-
-## Screens: place, not time
-
-A vault with scenarios needs screen notes as well. The two folders look alike and are
-not alike. Mix them, and the same sentence lands in two notes. One copy then goes
-stale, and the reader has to guess which one is true.
-
-> **A scenario is time. A screen is place.**
-
-|           | Scenario                               | Screen               |
-| --------- | -------------------------------------- | -------------------- |
-| Question  | What does the person do, in what order | What is on this page |
-| Words     | Verbs                                  | Nouns                |
-| Test word | "then"                                 | "here"               |
-| Reach     | Crosses screens                        | One screen           |
-
-Wrote "then he presses save"? That is a scenario. Wrote "here is a save button"? That
-is a screen.
-
-### Where a failure sentence goes
-
-Failures are the slippery part, because both notes have a claim on them. Split every
-failure in two.
-
-- The scenario owns **what happened**: the file did not open, the item turns to a
-  failed state, and the queue keeps going.
-- The screen owns **how it looks here**: the tile is dim and reddish, and it carries
-  one remove button.
-
-### A screen note restates no number
-
-Numbers and reasons live in entities and ADRs. The screen note links to them, and it
-never copies the value. Otherwise one number sits in five notes, and four of them go
-wrong.
-
-A mock-up may show a number. Say next to the mock-up that the number is an example.
-
-### Every screen is named by a scenario
-
-Two rules, and they run in both directions.
-
-- Every screen note is named by at least one scenario.
-- Every scenario lists the screens it crosses, under one fixed heading.
-
-A screen that no scenario reaches is dead work, or a missing scenario. Both cases need
-an answer before anyone builds it.
-
-### Never create a placeholder screen note
-
-An empty screen note reads as decided, and that is a lie. A screen gets a note when it
-is thought through. Until then it is one line in the index.
-
-### Rules that cross screens live in one architecture note
-
-A rule that holds everywhere belongs to no single screen. Copy it into each screen note
-and it drifts. Keep it in one architecture note, and let every screen note link there.
-
-Typical residents: the header and the footer, the loading and empty states, the undo
-bar, the accessibility rules, and the interface copy.
-
-### The screen index lists four groups, not one
-
-An index that lists only the finished screens hides the useful part.
-
-| Group                  | What it holds                                       |
-| ---------------------- | --------------------------------------------------- |
-| Thought through        | Screens with their own note                         |
-| Drawn by somebody else | A third-party form, or a page from a shared library |
-| Deferred               | Screens in `future/`, each with its trigger         |
-| Never                  | Screens that will not exist, each with the reason   |
-
-The last group earns its place. "No price screen, because the button already names the
-price" answers the same proposal three times a year.
-
-### One slot with several states beats a new screen
-
-A new state is not a new screen. Draw the slot once, then list its states in a table.
-
-The main action is the common case. Free, priced, running, and paid can share one
-button. Every state you turn into a screen needs its own address, its own back button,
-and its own test.
-
-### Draw the screen with plain characters
-
-A box drawing inside a fenced block renders everywhere, and it needs no image file. It
-also forces the note to name the pieces in order.
-
-```text
-┌──────────────────────────────┐
-│ ←   Screen name              │
-├──────────────────────────────┤
-│    [ the main object ]       │
-├──────────────────────────────┤
-│  Setting   [ value ▾ ]       │
-│  Setting   ━━●━━━  70        │
-├──────────────────────────────┤
-│  [       Main action       ] │
-└──────────────────────────────┘
-```
-
-Keep the drawing small. It shows the order and the weight of the pieces. It is not the
-final design.
-
-### Layouts: same pieces, different container
-
-Write one note per screen, never one note per device. A narrow and a wide layout hold
-the same pieces in a different container.
-
-Say what moves. A row of settings becomes a side column. A grid gets more columns. The
-purpose of the screen never changes with the window.
-
-Pick the layout by window shape, not by device name. A phone held sideways is a wide
-window with almost no height.
-
-### A screen note ends with three lists
-
-| List                      | What it prevents                                    |
-| ------------------------- | --------------------------------------------------- |
-| What is not here, and why | The control you removed returns next quarter        |
-| What goes wrong           | The empty, partial, and broken cases stay unwritten |
-| What to check             | A tester cannot write cases from the note           |
-
-The last list is the point of the whole note. A manager must understand every screen
-note. A tester must be able to write test cases from it.
-
-In a layered vault the check lines live in `qa/`. The screen note then has no
-"What to check" heading. It names its list in one line, under the parts table or
-in "Related notes".
-
-## One note owns the addresses
-
-Screens need addresses, and addresses need one owner. Give the vault a single
-architecture note for them, `current/architecture/routing.md`.
-
-Its scope is narrow on purpose.
-
-| In this note               | Somewhere else                              |
-| -------------------------- | ------------------------------------------- |
-| The list of addresses      | What is on each page, in the screen note    |
-| Who decides a redirect     | The map of transitions, in the journey note |
-| The back button            | Layout, copy, and parts                     |
-| A cold open by direct link |                                             |
-| The language prefix        |                                             |
-
-### Every screen has its own address
-
-A screen without an address cannot be left. The phone back button then closes the
-whole app, and the person's work goes with it.
-
-So the address table and the screen index must match, row for row. A screen with no
-row is a defect in one of the two notes.
-
-### The test question: does it cover the work?
-
-Not everything that opens on top is a screen.
-
-> **Does it cover the whole working area?**
-
-Yes means a screen, and a screen needs an address. No means a part of the screen
-underneath, and it gets no address.
-
-Ask this before you write either note. The answer moves panels into screens, and
-screens back into panels.
-
-### The address names the object, not "the current one"
-
-An address that means "the project I opened last" points at different data on
-different days. The bookmark then lies, and a second tab lies as well.
-
-| Rule                                                                  | Why                                                       |
-| --------------------------------------------------------------------- | --------------------------------------------------------- |
-| Put the object id in the address, even while there is only one object | Then nothing has to move when the second one arrives      |
-| Use the object's own id, never its position in a list                 | Deleting a neighbour would change every address           |
-| Make the id random, not sequential                                    | A neighbouring number must not reach somebody else's work |
-
-An example shape: `/p/<project>`, `/p/<project>/item/<item>`, `/p/<project>/export`.
-
-### Who decides a redirect: the server or the client
-
-This is the hardest part of the note, and the answer depends on one thing. Where does
-the data live?
-
-Data on the server means the server decides. Data in the browser means the server
-knows nothing about it, so the client decides.
-
-A returning person must not see the wrong page, not even for one frame. So the
-decision has to happen before the first paint. A small hint, such as a cookie with
-the last object id, lets the server route without reading the work itself.
-
-**The hint holds an id and nothing else.** No name, no address, no file.
-
-#### The redirect loop, and the rule that prevents it
-
-The hint and the work live in two places, so they can die apart. A browser clears the
-storage of a rarely used site on its own. Then the hint says "go to the project", and
-the browser says "there is no project".
-
-> **Found no work at the address? Clear the hint first, then send the person home.**
-
-Without this rule the two sides bounce for ever, and the site stops opening at all.
-Write the rule down, because the code will be written by somebody who never saw the
-loop.
-
-### The back button is a step in history
-
-> **The arrow in the header is one step back in history, not a fixed link.**
-
-A screen reached from two places then returns to the right one, and it needs no second
-address.
-
-| Pressed back on | Lands on                      |
-| --------------- | ----------------------------- |
-| Item editor     | The workspace, at that item   |
-| Export          | Wherever the person came from |
-
-**There may be no history at all.** A bookmark or a reload leaves nothing to go back
-to. Name the fallback for every such screen, or the arrow throws the person off the
-site.
-
-### A cold open needs a row for every address
-
-Any address can open from nothing: a bookmark, a reload, a link one year old. The
-object may be gone.
-
-| Opened                        | What shows                                   | Who decides |
-| ----------------------------- | -------------------------------------------- | ----------- |
-| A live object                 | Its screen                                   | —           |
-| A deleted object              | Home, and the address in the bar is replaced | Server      |
-| An object from another device | Home. The hint is cleared first              | Client      |
-| A deleted child object        | The parent screen                            | Client      |
-
-**Replace the address in the bar.** Otherwise a reload repeats the miss, and the back
-button returns to the same dead address.
-
-A person's own stale link needs no error page. They did not type it, and their work
-waits one step away. A made-up address is a different case, and it gets the shared
-not-found page.
-
-### What lives without an address
-
-| What                                 | Why                                        |
-| ------------------------------------ | ------------------------------------------ |
-| A panel that leaves the work visible | It hides nothing                           |
-| A menu in the header                 | It opened and closed. Nobody returns to it |
-| A confirm dialog                     | The answer is needed now                   |
-| A short undo bar                     | It lives for about ten seconds             |
-
-**A third-party overlay is the tricky one.** A payment form drawn by somebody else has
-no address, because the screen under it did not change. But the phone back button must
-close the form, not the page. So opening it adds one history entry, and closing it
-takes that entry away.
-
-A history entry is not an address. The bar does not change, and the link cannot reopen
-the form.
-
-### Names you do not take
-
-A shared library may bring its own pages later: sign-in, settings, a public profile.
-Leave those names free from the first day. Then the library arrives, and no address of
-yours has to move.
-
-### The language prefix
-
-Decide the shape now, even with one language. Give every extra language a prefix, and
-give the main one no prefix. Every address in the table then stays valid when the
-second language lands.
-
-### A client-only flag stays client-only
-
-A query flag that only the browser reads must never be read on the server. Read it
-there, and the page loses its pre-render for everybody. The cost falls on every
-visitor, for a flag that is off in production.
-
-### End the note with a check list
-
-The address note is testable, so give the tester lines to run.
-
-- Every address opens from a bookmark, and shows the right page.
-- The back button lands where the table says, on every screen.
-- A cold open of a deleted object replaces the address in the bar.
-- Clearing the browser storage while the hint stays does not loop.
-- A made-up address shows the not-found page.
-
-In a layered vault these lines go to a list in `qa/`. The address note has no
-check list heading then. It names the list in one line, in "Related notes".
-
-## Note templates
-
-These show the body of each note. The header follows
-[Properties / YAML frontmatter](#6-properties--yaml-frontmatter), and holds no `type`.
-
-### Entity note
-
-```text
-# Entity Name
-
-## Purpose
-What the entity represents.
-
-## Status
-Current / Future / Archive.
-
-## Fields
-List of fields and their meaning.
-
-## Relations
-Which entities it links to.
-
-## Used in scenarios
-Links to user scenarios.
-
-## Used in diagrams
-Links to diagram notes.
-
-## Architecture decisions
-Links to ADRs.
-
-## Limits
-What must not be broken.
-
-## Future notes
-What may change later.
-
-## Open questions
-Unsolved questions.
-```
-
-### User scenario note
-
-```text
-# User Scenario Name
-
-## User goal
-What the user wants to get.
-
-## Context
-Inputs, limits, preconditions.
-
-## Main scenario
-Step-by-step happy path.
-
-## Alternative scenarios
-Errors, empty states, edge cases.
-
-## System actions
-What the system does at each step.
-
-## Affected entities
-Links to entity notes.
-
-## Affected processes
-Links to process / pipeline notes.
-
-## Mermaid diagram
-The scenario diagram.
-
-## Open questions
-What still needs deciding.
-```
-
-### Screen note
-
-```text
-# Screen Name
-
-## What this screen is for
-Why the page exists. Whether it is optional. How the person reaches it.
-
-## Why this is a screen
-Only when the answer is not obvious. Why it is not a panel inside another screen.
-
-## Narrow layout
-A small box drawing.
-
-## Wide layout
-Same pieces, different container. What moves, and what never changes.
-
-## Parts
-A table: part, and what it does.
-
-## Rules that hold here
-One short section per rule. Link the entity or the ADR that owns each number.
-
-## What is not here
-A table: what is missing, and why.
-
-## What goes wrong
-A table: case, and what happens.
-
-## What to check
-One line per check. A tester writes cases from this list.
-In a layered vault: drop this heading. Name the list in `qa/` in one line,
-under Parts or in Related notes.
-
-## Related notes
-Links to entities, scenarios, ADRs, and the address note.
-
-## Open questions
-What still needs deciding on this screen.
-```
-
-### ADR note
-
-```text
-# ADR-XXX Decision Title
-
-> ⚠️ Banner (only if superseded). Pin a one-liner at the very top so the reader
-> sees it before the body:
-> "Partially superseded by [ADR-024 …](adr-024-plan-stored-as-a-subtree.md). Storage model only. The decision below still holds."
-
-## Status
-Proposed / Accepted / Accepted (partially superseded) / Superseded / Rejected.
-The header field `decision_status` holds `proposed`, `accepted` or `rejected`.
-
-## Context
-Why the question came up.
-
-## Decision
-What was decided.
-
-## Alternatives
-Which options were considered.
-
-## Consequences
-What this makes easier, harder, or deferred.
-
-## Revisit trigger
-When to review the decision.
-
-## Supersession
-- Supersedes: links to ADRs this one replaces (whole or in part).
-- Superseded by: links to ADRs that replace this one, with WHICH PART. Example:
-  "[ADR-024 …](adr-024-plan-stored-as-a-subtree.md) replaces the storage model.
-  Semantic independence still holds."
-
-## Related notes
-Links to entities, scenarios, diagrams.
-```
-
-### Future candidate note
-
-```text
-# Future Candidate Name
-
-## Status
-Future candidate.
-
-## Likely stage
-Roughly when it may be needed.
-
-## Trigger
-The exact signal that means it is time to move the idea to Current.
-
-## Problem
-Which problem it solves.
-
-## Proposed model
-What the solution may look like.
-
-## Why not current
-Why we do not add it now.
-
-## Migration path
-What to change when moving it to Current.
-
-## Related current notes
-Links to current entities, scenarios, ADRs.
-```
-
-### Open questions note
-
-Two notes share one shape. `current/open-questions.md` holds the questions this cycle
-answers. `future/deferred-questions.md` holds the rest, and it adds a signals table at
-the top.
-
-```text
-# Open Questions
-
-Only questions with no answer yet.
-A solved question is deleted whole, because the answer lives in the decision note.
-
-## Signals                          (deferred note only)
-One row per question: the exact signal that brings the answer.
-
-## The question, written as a question
-
-What is already decided, and which data already exists.
-
-**Question.** The one thing nobody knows yet.
-
-**Delays.** What waits for the answer. Write "Nothing" when nothing waits,
-and name what stands in place of the answer.
-```
-
-### Routing note
-
-One architecture note, and it owns every address.
-
-```text
-# Addresses
-
-## Scope
-What this note owns, and what lives in the screen and journey notes.
-
-## The rules the rest follows
-Every screen has an address. The address names the object, not "the current one".
-
-## The test question
-Does it cover the whole working area? Yes means a screen, so it needs an address.
-
-## The address table
-A table: screen, and address. One row per screen, and no row without a screen.
-
-## Who decides a redirect
-The server or the client, and why. The hint, and the rule that clears it first.
-
-## The back button
-A table: pressed back on, and lands on. Plus the fallback when history is empty.
-
-## A cold open
-A table: address opened from nothing, what shows, and who decides.
-
-## What lives without an address
-A table: panels, menus, dialogs, and a third-party overlay.
-
-## Reserved names and the language prefix
-Names a shared library will want later. The prefix shape for a second language.
-
-## What to check
-One line per check, all of them testable from a bookmark.
-In a layered vault: drop this heading. Name the list in `qa/` in Related notes.
-```
-
-### Diagram inside an architecture file
-
-Embed the diagram in an architecture file (e.g. `data-model.md`), not a separate file.
-
-Structure:
-
-````text
-# Data Model
-
-## Summary
-...
-
-## Tables
-...
-
-## ER diagram Stage 1
-
-Entities and relations:
-
-```mermaid
-erDiagram
-  ...
-```
-
-### Key takeaways from the diagram
-
-- [key insight 1]
-- [key insight 2]
-
-## Related notes
-
-Links to entities, scenarios, ADRs.
-
-````
-
-**Important:** the diagram must not be the only source of information. Always keep explanatory text next to the diagram.
-
-## Working with Current and Future
-
-When you add a new idea:
-
-1. Do not put it straight into `current/`.
-2. Create a future candidate.
-3. Set a trigger.
-4. Link it to current entities and scenarios.
-5. Create an ADR candidate if needed.
-
-When you accept an idea:
-
-1. Create or update an ADR.
-2. Move the note from `future/` to `current/`.
-3. Update related diagrams.
-4. Update entity notes.
-5. Update scenario notes.
-6. Archive old versions if they are no longer current (leave a tombstone, see Status separation).
-
-## Open questions: two notes, not one list
-
-An open question has a status, exactly like an entity or an idea. So open questions
-live in two notes:
-
-- `current/open-questions.md` — questions this cycle answers;
-- `future/deferred-questions.md` — questions whose answer comes later.
-
-One shared list looks tidy and reads badly. A release blocker sits next to a question
-nobody will read for a year. The reader cannot tell them apart. The page then grows
-into a wall of text, and people stop using it.
-
-### In a layered vault each layer keeps its own register
-
-Each layer has its own `open-questions.md`, at the root of its folder. A
-question lives in the register of the layer that decides it. So each owner
-finds all of their questions in one place.
-
-- **Two layers decide it?** It lives in the first layer of its `Decides` line.
-  The line names both layers.
-- **`core/open-questions.md` is the entry.** It links every layer register and
-  explains the importance levels. It holds only a question that all layers
-  decide.
-- **A question to another layer is how you ask for a change there.** Write it
-  in the register of that layer. You never edit that layer's note yourself.
-- **Deferred questions stay in one note.** Nobody works on them now, so one
-  list outside the layers is enough.
-
-One register for all layers was the rule before. In one vault of 37
-questions, 23 belonged to the designer. Every other owner read through them to
-find their own few.
-
-### Read the owner note's reasons before you file a question
-
-A rule usually carries its own why. That why often decides a case nobody wrote
-down. So open the owner note and read the reason beside every rule that touches
-your case. The answer is often already there, and the work is then a new rule
-sentence, not a question.
-
-One screen had two rules. It reads its record again when the tab becomes visible,
-and an edit begun before that return is finished rather than dropped. A session met
-both at once and filed "which of the two wins" as an open question. The first rule
-already carried its reason: nothing on the screen may move while a finger is on it.
-That reason answers the case. The registry then held a question that was not one.
-
-### The sorting test is not "does it block?"
-
-On a mature vault almost no question blocks work. The spec already has something in
-place of every missing answer. A calculated number, a rough number, or a rule that
-holds anyway. Sort by "does it block?" and nearly every question ends in one group.
-
-Ask this instead: **will anyone work on this question before the release?** Two
-reasons move a question to the deferred note.
-
-1. The answer only arrives after the release. It needs real users, real hardware, or
-   a complaint from a real person.
-2. The question is not about the current scope at all.
-
-A question that blocks work stays in the current note. Name the block in the question
-itself, so nobody has to guess.
-
-### Every question says what it delays
-
-Every question ends with one line: what waits for the answer. Write `Nothing` when
-nothing waits, and name what stands in place of the answer.
-
-Do not keep a separate list of delayed work, and do not count the questions. A second
-list always drifts from the first one.
-
-### Every deferred question names its signal
-
-The `future/` folder asks every idea for a trigger. A deferred question owes the same
-thing: the exact signal that brings the answer. Keep the signals in one table at the
-top of the note, one row per question.
-
-A deferred question without a signal is a question nobody reopens.
-
-### Moving a question is not answering it
-
-Move the section as it is. A move changes the status, not the content. If the text
-needs a rewrite, that is a separate edit with its own reason.
-
-**A solved question is deleted from either note, not ticked.** The answer belongs in
-the decision note. A page of ticked questions is an archive, and people stop searching
-in it.
-
-### Give a question no number
-
-`Open question 4` breaks the day question 3 gets an answer. Link a question by its own
-words instead. Then deleting one question breaks no reference to another.
-
-### Splitting an existing list costs one link sweep
-
-Every inbound link to the old page points at one question inside it, not at the page.
-So the split means visiting each link and sending it to the right note. Count those
-links before you start, and check every link again afterwards.
-
-## Supersession and partial supersession
-
-A binary `Superseded` status is not enough. On a real vault, a new decision often
-replaces only **part** of an old one — the storage model changes but the semantics
-stay, or the physical representation moves while the logical contract holds. If the
-old ADR keeps `Status: Accepted` and reads as whole truth, the next reader implements
-a model that no longer exists. This is the single most dangerous decay mode of a
-mature spec.
-
-Rules when a new ADR replaces an older one:
-
-1. **Both notes get updated, not just the new one.** The new ADR lists what it
-   `Supersedes`; the old ADR lists what it is `Superseded by` and **which part**.
-2. **If only part is replaced**, set the old ADR's status to
-   `Accepted (partially superseded)` and pin a banner at the top naming the new ADR
-   and the exact scope of the change.
-3. **If the whole decision is replaced**, set `Superseded`, add a tombstone, and move
-   it to `archive/`.
-4. **Never leave a one-directional pointer.** `Supersedes` on the new ADR without
-   `Superseded by` on the old one is a defect — backlinks must resolve both ways.
-
-The same applies to entities and scenarios: when a new model replaces an old one in
-part, mark the scope, don't silently leave the old note looking current.
-
-## Working with Mermaid
-
-Keep Mermaid code clean and ready to render.
-
-Keep text notes about a diagram outside the Mermaid block, in the Obsidian note itself.
-
-If you need a visible note on the diagram, add it as a separate node inside Mermaid, but do not overuse this. Keep the main explanations as text around the diagram.
-
-## Spec quality
-
-A good spec lets you answer fast:
-
-- which entities exist in the current version;
-- which entities are deferred;
-- which scenarios are covered;
-- which scenarios are not yet covered;
-- which screens exist, and which scenario names each one;
-- which screens will never exist, and why;
-- which address opens which screen, and who decides a redirect;
-- which decisions are made;
-- which decisions are candidates;
-- which questions are open, and which of them this cycle answers;
-- which deferred question waits for which signal;
-- which diagrams explain the system;
-- which future ideas have a clear trigger;
-- what to change for the next stage.
-
-## Naming conventions
-
-Pick one convention and hold it. Drift is what produces duplicate and orphan notes.
-The mode you picked in [Pick the vault mode first](#pick-the-vault-mode-first)
-decides the shape of every name below.
-
-**Repo mode (the default)**
-
-- **Folders**: kebab-case — `user-scenarios/`, `entity-candidates/`,
-  `architecture-ideas/`. Not `User Scenarios/`, not `entity_candidates/`.
-- **Notes**: kebab-case — `core-flow.md`, `data-model.md`.
-- **Index notes**: exactly one per folder, prefixed `00-` — `00-adr-index.md`.
-- **ADR files**: `adr-nnn-short-title.md` with a zero-padded number, or
-  `adr-<slug>.md` in a vault of slugs.
-
-**Obsidian mode**
-
-- **Folders**: Title Case with spaces — `User Scenarios/`, `Entity Candidates/`.
-- **Notes**: Title Case with spaces — `Core Flow.md`, `Data Model.md`.
-- **Index notes**: exactly one per folder, prefixed `00 ` — `00 ADR Index.md`.
-- **ADR files**: `ADR-NNN Short Title.md` with a zero-padded number, or
-  `ADR-<slug>.md` in a vault of slugs.
-
-**Both modes**
-
-- **Name a numbered ADR in full**: `adr-024-plan-stored-as-a-subtree.md`,
-  never `adr-024.md`. The bare number tells a reader nothing, and a link to it
-  says nothing either. A slug already says what the decision is, so it stands
-  alone.
-- **Keep note names unique** across the vault. Two notes with one name make every
-  link to that name a guess.
-- **Glossary invariant**: every entity in `current/entities/` must have a matching
-  term in `02-glossary.md`. The glossary is the ubiquitous language. An entity that
-  is not in it is vocabulary that drifts.
-
-## Parallel branches merge clean
-
-A busy vault has many branches open at once. Git merges each one line by line,
-and a merge conflict stops the person who merges. Four habits keep the vault
-free of them. The first three are rules that a script checks. All three start
-off, and a vault turns them on in its config.
-
-What git does with two branches, measured with `git merge-file`:
-
-| What each branch does | Table | List, blank line between items |
-| --- | --- | --- |
-| Edits one of two rows side by side | conflict | clean |
-| Adds a row, at two different places | clean | clean |
-| Adds a row, at the same place | conflict | conflict |
-| Adds a row next to a row the other edits | conflict | conflict |
-
-**1. A list, not a table.** A table row sits right under its neighbour. Git
-reads two edits of neighbours as one change, and it stops. A blank line between
-two list items keeps them apart. So a busy vault writes lists. Each item opens
-with its name in bold. Each other fact is a sub-item that starts with its own
-name. The rule is `tables: "forbidden"`.
-
-**2. A register keeps its order.** A glossary, a list of numbers, a list of
-questions: every branch adds to them. An item added at the end meets every other
-item added at the end. In the order of their names, two new items land at two
-places. The rule is `sorted`. It names the notes, and the alphabet of the heads.
-
-**3. The decision index is built, not written.** Every decision adds a line to
-its index, and so every two decisions conflict. So a script builds that list
-from the notes: the title, the link and the `summary` of each. The lines go in
-the order of the file names. The rule is `decisionIndex: true`. Never edit the
-list by hand. Change the decision note instead, and run the script.
-
-**4. A mass edit is a script in a short branch.** A sweep across many notes is
-a new link format, a renamed term, or a new shape of a note. Such a sweep meets
-every branch that is open. So write it as a script, never by hand. Run it in a
-branch of its own, and merge that branch the same day. Put the command in the
-commit message. A branch that then conflicts takes its own side of each
-conflict, and runs the script again. The script gives the same result on
-either side.
-
-`scripts/fix-spec.mjs` is the script for the first three rules. It turns each
-table into a list, sorts the registers, and builds each decision index. **A
-conflict in such a note is never solved by hand.** Take either side, run the
-fix, and commit what it writes.
-
-## Link style
-
-**Repo mode uses relative Markdown links.** They render everywhere: in Obsidian,
-on GitHub, on GitLab, in a pull request diff.
-
-- **Body links**: `[ADR-024 Plan stored as a subtree](../adr/adr-024-plan-stored-as-a-subtree.md)`.
-  kebab-case names need no URL escaping. A name with a space would need `%20`,
-  and a `&` would need `%26`.
-- **Link the note, not the folder.** A link that ends at a folder lands nowhere on
-  a forge.
-- **Frontmatter** `related:` holds plain note names, never links. No renderer turns
-  a frontmatter value into a link, in either mode.
-- **Mermaid** renders natively on GitHub in a fenced `mermaid` block. Diagrams need
-  no change in either mode.
-
-**Obsidian mode uses short-name wikilinks**: `[[KnowledgeUnit]]`, not
-`[[../Entities/KnowledgeUnit]]`. Set Obsidian's "New link format" to *Shortest path
-when possible*. A path wikilink breaks when a note moves, and it clutters the graph.
-Link an ADR by its full note name, `[[ADR-024 Plan stored as a subtree]]`, never the
-bare `[[ADR-024]]`.
-
-**A wikilink is dead text on a forge.** GitHub and Confluence show `[[Note]]` as
-those exact characters. So a vault that anyone reads outside Obsidian belongs in
-repo mode.
-
-**Pick one style per vault and hold it.** A vault that mixes wikilinks and relative
-links is the drift this section exists to prevent.
-
-## Invariants (machine-checkable)
-
-These are the rules a validator can enforce. A vault that satisfies all of them is
-structurally sound; treat any violation as a defect, not a style preference.
-
-The paths below are written in repo mode. In Obsidian mode read `00 ` for `00-`,
-and Title Case for every folder name.
-
-1. Exactly one index note per folder, prefixed `00-`. No second index file, and no
-   empty one. `templates/` is the only folder that has none.
-2. No empty (0-byte) notes.
-3. Every note has a non-empty `summary` of twenty words or fewer.
-4. Every entity in `current/entities/` is referenced by at least one scenario.
-5. Every scenario links to at least one entity.
-6. Every entity in `current/entities/` has a term in `02-glossary.md`.
-7. Every note in `future/` has a non-empty `## Trigger` and links to at least one
-   note in `current/`.
-8. Every ADR has all required sections, including `Revisit trigger` and `Supersession`.
-9. Supersession is bidirectional: if ADR-A says `Supersedes B`, then B says
-   `Superseded by A` (whole or partial).
-10. Every link resolves to a note that exists (template placeholders excluded).
-11. One link style in the whole vault. In repo mode every body link is a relative
-    Markdown link, and a `[[wikilink]]` in a body is a defect. In Obsidian mode it
-    is the other way round. Either way, a link to an ADR by its bare number
-    (`adr-024.md`, `[[ADR-024]]`) is forbidden. A slug may stand alone.
-12. No note with `Status: Superseded` / `Rejected` left in `current/` without a
-    tombstone pointer.
-13. Every question in `future/deferred-questions.md` has a row in the signals table.
-14. No numbered question heading (`Q3`, `Open question 4`) in either questions note.
-15. Every note in `current/screens/` is named by at least one scenario, and every
-    scenario lists the screens it crosses.
-16. Every screen note has a parts table and a check list. A note without them is a
-    placeholder. A vault with `lists: null` asks for the parts table only.
-17. No screen note holds a number that an entity or an ADR owns.
-18. Every screen note has a row in the address table, and every row in that table
-    names a screen note.
-19. No two screens share one address.
-
-Where the vault's own `AGENTS.md` differs from an invariant here, the vault's
-`AGENTS.md` wins.
-
-A layered vault reads three of the invariants above in its own way:
-
-- Read `current/` as "any layer", in every invariant that names it.
-- Read `02-glossary.md` as `core/glossary.md`, in invariant 6.
-- Invariant 16: a screen note links its list in `qa/` instead of holding lines.
-
-A layered vault also adds these:
-
-20. Every note lives in a layer folder. Only `00-home.md` and the vault
-    `AGENTS.md` stand at the root. Deferred ideas are the one exception. They
-    live in a `future/` folder, or in a backlog beside the vault.
-21. No header holds `type`. `status` comes from the closed list, and an ADR's
-    `decision_status` does too.
-22. One note per ADR number or slug, across all layers. In a vault of slugs,
-    every slug that a note or code names belongs to a live ADR, and no ADR
-    takes a retired slug.
-23. A note with `checks:` in its header lives in `qa/`, and only there.
-24. Every question in an open questions register names the layer that decides it.
-    It lives in the register of the first layer it names.
-
-### A script checks them
-
-The skill carries a check in `scripts/`. Run it from the root of the vault's
-repo, where the skill is installed:
+The code is the truth for what the product does. The spec says why, and what
+we chose not to do. So it lives as close to the code as it can.
+
+| What | Where it lives |
+| --- | --- |
+| A reason for one place in the code | A comment at that place |
+| A number | A named constant. Its reason sits in a comment at the constant |
+| A rule that spans several files of one part | The `CLAUDE.md` of the package that owns the part |
+| What the product is, for whom, its main paths, its words | A short product spec for people, in `docs/spec` |
+| A bug, a plan, an open question | An issue |
+
+**Why not a vault of small linked notes.** Such a spec retold the code, so a
+large share of it went stale. Its notes pointed at each other in long chains.
+An agent spent its context on them and found little it could not read in the
+code. A `CLAUDE.md` in the package folder reaches the agent by itself: Claude
+Code loads it when it works in that folder.
+
+## One `CLAUDE.md` per part
+
+- **One file per package or folder that owns a part.** Not one per source file.
+- **No `AGENTS.md` beside it.** Write straight into `CLAUDE.md`. Claude Code
+  loads a nested `CLAUDE.md`, and it does not load a nested `AGENTS.md`.
+- **The root `AGENTS.md` stays.** A root `CLAUDE.md` imports it with
+  `@AGENTS.md`, so other tools read the same text.
+
+### The shape
+
+- An H1 that names the part.
+- A short opening. It says what the part is. It says that a one-place reason
+  lives in a comment there.
+- A table "part → code" when it saves a search. Keep it short.
+- One section per area. Each rule is a bold lead sentence, then its reason.
+
+### What goes in
+
+Only three kinds of text:
+
+- **A rule that spans several files, with its reason.** One file alone cannot
+  hold it, so a comment is the wrong home.
+- **A rejected way.** "We turned down X, because Y." The code cannot show a road
+  it did not take. Without the line, the next person tries X again.
+- **A rule of absence.** "The screen has no X, because Y." Nothing in the code
+  can hold a comment for a thing that is not there.
+
+### What stays out
+
+- **A retelling of the code.** The reader sees it in the code.
+- **A list of files that `ls` shows.** A short map table is the one exception.
+- **A reason for one place.** It goes in a comment at that place.
+- **A value.** Name the constant, never the number.
+- **A bug, a plan, a story or an issue number.** See below.
+- **A copy of a rule from another `CLAUDE.md`.** Link to it instead.
+
+## One fact lives in one file
+
+Another file links to the fact and never copies it. A copy goes stale first,
+and then two files disagree.
+
+Before you write a rule, look for it:
 
 ```bash
-node .claude/skills/spec-rules/scripts/check-spec.mjs
+git ls-files '*CLAUDE.md'
+git grep -n "<a word of the rule>" -- '*CLAUDE.md'
 ```
 
-It needs only Node. It checks the invariants a script can read, and the check
-lists against the tests. `scripts/README.md` names each rule and the invariant
-behind it. `scripts/fix-spec.mjs` rewrites the notes for the three merge rules.
+**A rule shared by two parts goes to their common owner.** That is a shared
+package both parts use, or the nearest folder above both. Each part then links
+to it.
 
-**The rules live in the script. The data of one vault lives in its own repo.**
-That data is the layers, the retired names, the wording that repeats on purpose
-and the language of the headings. It goes into `spec-rules.config.mjs` at the
-repo root. Never copy the script into a repo to change a rule. A copy drifts
-from the skill, and the next change in the skill never reaches it.
+## A comment holds the one-place reason
 
-Where the vault's `AGENTS.md` differs from an invariant, the config says so too.
-A rule turns off with `rules: { "<id>": false }`.
+- **No length limit.** Take the room the reason needs. Cut every word that
+  adds nothing.
+- **One idea per comment, in the present tense.** Say how the code works now.
+- **The reason and the rejected way of that place.** Not a retelling of the
+  next line.
+- **A measure may back a reason.** Keep its date and its numbers. The story of
+  the debug session goes.
 
-**Two warnings ask for a small cut during normal work.** A big cleanup loses rules.
-Both start off, and a warning never fails the run.
+## A pointer names a heading or a symbol
 
-- `decisions.unnamedInCode` names a code decision that no code file names. It
-  may hold a rule the code never follows.
-- `budgets` names a note longer than its budget in lines. It may hold two
-  subjects, or a copy of another note.
+A comment points at a `CLAUDE.md` heading, or at a symbol. A heading and a
+symbol survive a move of the file.
+
+```ts
+// see `packages/cart-page/CLAUDE.md` → The item list
+// see `ROW_GAP`
+// see `fitRow` in `lib/row-fit.ts`
+```
+
+- **The heading text is exact.** The text after `→` starts with a real heading
+  of that file. Any heading level counts.
+- **Point at a file only as a last resort.** Do it when the reader cannot find
+  the reason without it.
+- **A test does not point at the code it tests.** Its name says what it holds.
+  The code already owns the reason.
+- **A `CLAUDE.md` names a file with a relative link or a path in backticks.**
+- **Check every pointer in the repo's `test` script.** A small script reads
+  each comment and each `CLAUDE.md`. It fails when a named file, symbol or
+  heading is gone. Then a rename breaks the commit, not the reader.
+
+## A number lives in a constant
+
+- **Put the value in a named constant in the code.**
+- **Write its reason in a comment at the constant.** Where it was measured, and
+  what a larger or smaller value broke.
+- **A `CLAUDE.md` names the constant.** It never repeats the value, so the two
+  never drift apart.
+
+## No bugs, plans or history
+
+- **A bug is an issue.** It is not a rule, and it goes away when it is fixed.
+- **A plan is an issue.** A spec describes the product as it works today. A
+  feature that is not built has no rule.
+- **History lives in git.** Never write "we used to" or "this was changed".
+  A rejected way is the one form of the past that stays.
+- **Never write an issue number in code or in a `CLAUDE.md`.** An issue closes,
+  and the sentence around the number still reads as live truth. Name the
+  durable thing instead: a heading, a symbol or the plain fact.
+
+## The product spec for people
+
+`docs/spec` may keep a short product spec. It is for people who do not read
+code: a product manager, a tester, a marketer.
+
+- **Write it in the language of the team, as plain connected prose.**
+- **It holds what the product is and for whom.** Also the main scenarios, what
+  is in the release, the words of the product, and the marketing.
+- **It holds no code rule and no number the code owns.** Those live in the code
+  and in the `CLAUDE.md` files.
+- **Code never points into it.** No check guards such a pointer, so it would
+  break in silence.
+- **An open question is an issue**, never a list in the spec.
+
+## Moving an old spec next to the code
+
+Move one part at a time. The old notes of a part leave in the same pull
+request as its new `CLAUDE.md`.
+
+1. **Sort every fact of the old notes.** A rule with a reason, a number, a
+   rejected way, a retelling of code, a bug, a bare link, or filler. Find the
+   place of each fact in the code, or mark it as not in the code.
+2. **Check each mismatch yourself.** Read the code until you are sure. The code
+   is the truth. Never change the code to match a note. Open an issue for a
+   real mismatch.
+3. **Write the `CLAUDE.md` of the part.** Only rules that span several files go
+   in. Retellings, bugs, history and filler go away. A rule of absence and a
+   rejected way stay, even when no code holds them.
+4. **Move each one-place reason into a comment at its symbol.** Change comments
+   only. Never change behaviour, names or imports in the same step.
+5. **Delete the old notes, and fix every pointer to them.** Look in code, in
+   tests, in other `CLAUDE.md` files and in the root `AGENTS.md`.
+6. **Run the pointer check.** It reports nothing when you are done.
+
+## The old vault check
+
+`scripts/` still holds the check of an old vault of linked notes:
+`check-spec.mjs`, `fix-spec.mjs` and `check-lists.mjs`. A repo calls them while
+its old vault exists. Remove the call with the last old note. Every rule and
+config key is in `scripts/README.md`. Never write a new note for them.
 
 ## Anti-patterns
 
-Do not:
+- A `CLAUDE.md` that retells the code, or lists what `ls` shows.
+- Two `CLAUDE.md` files that hold the same rule.
+- A chain of pointers: "see X", where X says "see Y".
+- A value written in a `CLAUDE.md` instead of a constant name.
+- A nested `AGENTS.md`. Claude Code does not load it.
+- A comment or a `CLAUDE.md` with an issue number, a bug or a plan.
+- A test comment that points at the code the test checks.
+- A pointer from code into the product spec.
 
-- keep one huge file for the whole architecture;
-- **put diagrams in a separate `diagrams/` folder** — embed them in the architecture files;
-- draw diagrams without explanations;
-- define entities without scenarios;
-- write scenarios without links to entities;
-- write the same sentence in a scenario note and in a screen note;
-- create a placeholder screen note for a screen nobody has thought through;
-- copy a cross-screen rule into every screen note;
-- give a state its own screen where one slot with several states would do;
-- give two screens one address, or a screen no address at all;
-- write an address that means "the object opened last";
-- keep a routing hint that can outlive the work it points at;
-- leave future ideas without a status or without a concrete trigger;
-- keep every open question in one list, so a release blocker sits next to a question
-  nobody will read for a year;
-- leave a deferred question without the signal that will answer it;
-- mark a question solved with a tick instead of deleting it;
-- make architecture decisions without an ADR;
-- supersede an ADR with a one-directional pointer (new note only, old note untouched);
-- leave a superseded note in `current/` reading as live truth;
-- omit a current entity from the glossary;
-- keep a second or empty index note in a folder;
-- link an ADR by its bare number instead of its full note name;
-- use Mermaid as the only source of meaning;
-- treat Obsidian as a plain Markdown folder;
-- mix current and future without clear marking;
-- duplicate the same information by hand in many places instead of linking;
-- in a layered vault, edit a note of another layer instead of filing a question;
-- retell a fact of another layer instead of linking it;
-- force every link to go one way between layers;
-- put a check list beside the note it checks, outside `qa/`;
-- cut a mixed note and leave an empty heading with only a pointer under it;
-- delete a rule as "a copy" without opening its owner and finding it there;
-- add a header field that no script reads, or bring `type` back.
+## Example
 
-## Final idea
+An invented part, to show the shape.
 
-```text
-Scenarios explain why.
-Architecture explains how.
-Entities explain what.
-ADR explains why this way.
-Diagrams explain visually.
-Future notes preserve what is not current yet.
-Links connect everything.
+```markdown
+# The cart page
+
+The cart page lists what a person is about to buy. This file holds the rules
+that span several files of the page. A reason that belongs to one place in the
+code lives in a comment there.
+
+| Part | Code |
+| --- | --- |
+| The page and its panel | `packages/cart-page/src/ui` |
+| Row sizes | `packages/shared/layout/src/rows.ts` |
+
+## The item list
+
+**One line per item on any window.** The total stays in sight without a
+scroll. The row height is `ROW_HEIGHT`.
+
+We turned down:
+
+- A grid of cards. On a phone a person lost the total.
+- A sticky total bar. It covered the last item.
+
+## What the cart page never has
+
+- **No countdown.** It pushes a person, and they leave.
+- **No coupon field.** A field that most people leave empty makes them search
+  for a code.
 ```

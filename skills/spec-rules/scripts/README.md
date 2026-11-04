@@ -1,6 +1,10 @@
 # The vault check
 
-Two scripts check a spec vault against the invariants in `SKILL.md`. They need
+These scripts serve a repo that still has an old vault of linked notes. The
+skill no longer describes that vault, so this file holds its rules. Remove the
+call to a script when the last old note leaves.
+
+Two scripts check a spec vault against its invariants. They need
 Node 18 or newer and nothing else. No package is installed, so a CI step can run
 them before any install.
 
@@ -47,7 +51,7 @@ vault, like a link: `../backlog`. A path to code is relative to the repo root.
 
 ## The rules
 
-| Rule id | What fails | Invariant in `SKILL.md` |
+| Rule id | What fails | Old invariant number |
 | --- | --- | --- |
 | `empty-note` | A note with no text | 2 |
 | `links` | A link that resolves to nothing, in the vault and in `frozen` folders | 10 |
