@@ -1,70 +1,44 @@
-# Specification as a linked knowledge base
+# The spec lives next to the code
 
-A method (and Claude Code skill) for writing software specifications as a **living
-knowledge base** — linked notes, ADRs, status separation, and embedded Mermaid
-diagrams — instead of one big linear document. It is built for Obsidian, and it
-reads on GitHub too.
+A method (and an agent skill) for keeping a software spec beside the code it
+describes. The code says what the product does. The spec says why, and what we
+chose not to do.
 
-It combines a few well-worn ideas into one operating model:
+| What | Where it lives |
+| --- | --- |
+| A reason for one place in the code | A comment at that place |
+| A number | A named constant, with its reason in a comment |
+| A rule that spans several files of one part | The `CLAUDE.md` of the package that owns the part |
+| What the product is, for whom, its main paths | A short product spec for people, in `docs/spec` |
+| A bug, a plan, an open question | An issue |
 
-- **Zettelkasten** — atomic, densely linked notes instead of one monolith.
-- **Domain-Driven Design** — entities + ubiquitous language, never modeled without scenarios.
-- **ADRs** (Architecture Decision Records) — every decision recorded with context and alternatives.
-- **Trigger-driven deferral** — every deferred idea carries the exact signal that means
-  "build it now", so decisions are postponed on purpose, not forgotten. Open questions
-  split by status the same way. A release blocker never hides among the rest.
+A `CLAUDE.md` holds only three kinds of text: a rule that spans several files,
+a rejected way, and a rule of absence. It never retells the code. One fact lives
+in one file, and a comment points at it by heading or by symbol.
 
-## Pick a mode first
+## Why not a vault of linked notes
 
-A vault stores the same notes in one of two shapes, and the skill asks you to pick
-one before the first note.
+Earlier versions of this skill described a spec as a vault of small linked
+notes. In practice such a vault retold the code, and a large share of it went
+stale. Its notes pointed at each other in long chains, and an agent spent its
+context on them. A `CLAUDE.md` in the package folder reaches the agent by
+itself: Claude Code loads it when it works in that folder.
 
-**Repo mode is the default.** The vault lives in a git repo, and people read it on
-GitHub too. Names are kebab-case, and every body link is a relative Markdown link.
-Those links resolve in Obsidian and on GitHub, and Mermaid renders natively on
-GitHub. The cost is Obsidian's rename-aware links.
-
-**Obsidian mode** is for a vault that lives in Obsidian and nowhere else. Names are
-Title Case with spaces, and links are `[[wikilinks]]`. GitHub shows a wikilink as
-plain text in brackets, so pick this mode only when nobody reads the vault there.
-
-Either way the payoff comes from backlinks, graph view, properties, and tags. See
-*Pick the vault mode first* in `SKILL.md`.
+The old vault method is in the git history of this repo. Its check scripts stay
+in `skills/spec-rules/scripts/` while a repo moves its old vault out.
 
 ## What's in here
 
 ```
 skills/spec-rules/
-  SKILL.md                          The method, as an agent skill (skills.sh entrypoint)
-  templates/                        Note templates, installed with the skill
-    entity-template.md
-    scenario-template.md
-    adr-template.md
-    diagram-template.md
-    future-candidate-template.md
-    open-questions-template.md
-    deferred-questions-template.md
-    screen-template.md
-    routing-template.md
-    check-list-template.md
-  scripts/                          The vault check, installed with the skill
-    check-spec.mjs                  Checks the vault against the invariants
+  SKILL.md                          The method, as an agent skill
+  scripts/                          The check of an old vault, for the move
+    check-spec.mjs                  Checks the vault against its invariants
     check-lists.mjs                 Matches the check lists against the tests
+    fix-spec.mjs                    Rewrites notes for the merge rules
     spec-rules.config.example.mjs   The data of one vault, as an example
     README.md                       Every rule and every config key
 ```
-
-## Use as a vault scaffold
-
-1. Copy `skills/spec-rules/templates/` into your vault's `templates/` folder.
-2. Create the status folders `current/`, `future/`, `archive/` and the MOC index
-   notes (`00-home.md`, `00-current-index.md`, ...). See the recommended vault
-   structure in `SKILL.md`. A vault with several owners (product, copy, design,
-   code, testing) splits the live spec into layers instead. The vault's own
-   `AGENTS.md` names them. See *Split a growing vault into layers by owner* in
-   `SKILL.md`.
-3. Point Obsidian's core **Templates** plugin at your `templates/` folder.
-4. Start capturing entities, scenarios, screens, and ADRs as linked notes.
 
 ## Use as an agent skill
 
@@ -75,41 +49,9 @@ Cursor, OpenCode, and others):
 npx skills add sedlukha/spec-rules
 ```
 
-This installs `skills/spec-rules/` — `SKILL.md` plus its `templates/` and `scripts/`. Or copy that
-folder manually into your skills directory (e.g. `.claude/skills/spec-rules/`).
+This installs `skills/spec-rules/`. Or copy that folder by hand into your skills
+directory, for example `.claude/skills/spec-rules/`.
 
-The model can trigger the skill on its own, when the work looks like spec
+The model can start the skill on its own, when the work looks like spec
 writing. To make it explicit only, add `disable-model-invocation: true` to the
 frontmatter. Then it runs when you call it by name, and never on its own.
-
-## Check a vault with a script
-
-The skill carries a check for the invariants a script can read. It needs Node 18
-or newer and no install:
-
-```bash
-node .claude/skills/spec-rules/scripts/check-spec.mjs
-```
-
-The rules live in the script. The data of one vault lives in
-`spec-rules.config.mjs` in the vault's repo. See
-[`skills/spec-rules/scripts/README.md`](skills/spec-rules/scripts/README.md).
-
-A busy vault can also turn on three rules that keep parallel branches free of
-merge conflicts. A second script rewrites the notes to pass them:
-
-```bash
-node .claude/skills/spec-rules/scripts/fix-spec.mjs
-```
-
-## The one-line summary
-
-```
-Scenarios explain why.
-Architecture explains how.
-Entities explain what.
-ADR explains why this way.
-Diagrams explain visually.
-Future notes preserve what is not current yet.
-Links connect everything.
-```
