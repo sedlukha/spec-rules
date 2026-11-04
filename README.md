@@ -24,20 +24,13 @@ stale. Its notes pointed at each other in long chains, and an agent spent its
 context on them. A `CLAUDE.md` in the package folder reaches the agent by
 itself: Claude Code loads it when it works in that folder.
 
-The old vault method is in the git history of this repo. Its check scripts stay
-in `skills/spec-rules/scripts/` while a repo moves its old vault out.
+The old vault method and its check scripts are in the git history of this repo.
 
 ## What's in here
 
 ```
 skills/spec-rules/
   SKILL.md                          The method, as an agent skill
-  scripts/                          The check of an old vault, for the move
-    check-spec.mjs                  Checks the vault against its invariants
-    check-lists.mjs                 Matches the check lists against the tests
-    fix-spec.mjs                    Rewrites notes for the merge rules
-    spec-rules.config.example.mjs   The data of one vault, as an example
-    README.md                       Every rule and every config key
 ```
 
 ## Use as an agent skill

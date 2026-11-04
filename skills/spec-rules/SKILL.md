@@ -28,13 +28,16 @@ Code loads it when it works in that folder.
 ## One `CLAUDE.md` per part
 
 - **One file per package or folder that owns a part.** Not one per source file.
-- **No `AGENTS.md` beside it.** Write straight into `CLAUDE.md`. Claude Code
-  loads a nested `CLAUDE.md`, and it does not load a nested `AGENTS.md`.
+- **No nested `AGENTS.md`.** Write straight into `CLAUDE.md`. Claude Code
+  reads a nested `AGENTS.md` only when no `CLAUDE.md` sits beside it, measured
+  on Claude Code 2.1.304. So a second file there is skipped in silence.
 - **The root `AGENTS.md` stays.** A root `CLAUDE.md` imports it with
   `@AGENTS.md`, so other tools read the same text.
 
 ### The shape
 
+- A `paths:` block above the H1, only when the code of the part lives in
+  another package. See the next section.
 - An H1 that names the part.
 - A short opening. It says what the part is. It says that a one-place reason
   lives in a comment there.
@@ -60,6 +63,47 @@ Only three kinds of text:
 - **A value.** Name the constant, never the number.
 - **A bug, a plan, a story or an issue number.** See below.
 - **A copy of a rule from another `CLAUDE.md`.** Link to it instead.
+
+## A part whose code lives in another package
+
+Claude Code loads a nested `CLAUDE.md` by folder. Sometimes the rules of a part
+live in one package, and most of its code in another. A page package may hold
+the rules, while a shared editor package holds its `ui`, `model` and `lib`
+files. Then an edit of that code never loads the rules.
+
+**Give the `CLAUDE.md` a `paths:` list, and link it from `.claude/rules`.**
+Claude Code reads every file in `.claude/rules`, and a symlink counts. A
+`paths:` list makes the file load only on a Read, Write or Edit of a matching
+file. So the text stays in the package folder, and it loads where the code is.
+
+```markdown
+---
+paths:
+  - "packages/shop-editor/src/**/{cart-row,use-cart}-*"
+  - "packages/shop-editor/src/**/cart-total.*"
+---
+
+# The cart page
+```
+
+```bash
+ln -s ../../../packages/cart-page/CLAUDE.md .claude/rules/parts/cart-page.md
+```
+
+- **Write globs from the repo root, and prefer a name prefix.** A new file
+  with that prefix then joins the part by itself.
+- **A file that two parts share matches both lists.** Its edit loads both rules.
+- **A file whose comment points at the rule matches the list.** The pointer
+  says the rule governs the file. A file in a third package may cite the rule
+  as a reason, and it needs no match.
+- **A new file of the part takes a covered name, or joins the list.**
+
+We turned down:
+
+- **An `@` import in a rule file.** Measured on Claude Code 2.1.304: the
+  import loaded at the start of every session, whatever the `paths:` list said.
+- **Moving the code into one folder per part.** It moves many files, and it
+  nests slices inside a slice.
 
 ## One fact lives in one file
 
@@ -100,6 +144,8 @@ symbol survive a move of the file.
 
 - **The heading text is exact.** The text after `→` starts with a real heading
   of that file. Any heading level counts.
+- **Name a `CLAUDE.md` by its full path from the repo root.** Many folders
+  hold a `lib` or a `model`, so `lib/CLAUDE.md` makes a person search.
 - **Point at a file only as a last resort.** Do it when the reader cannot find
   the reason without it.
 - **A test does not point at the code it tests.** Its name says what it holds.
@@ -108,6 +154,10 @@ symbol survive a move of the file.
 - **Check every pointer in the repo's `test` script.** A small script reads
   each comment and each `CLAUDE.md`. It fails when a named file, symbol or
   heading is gone. Then a rename breaks the commit, not the reader.
+- **The same script guards each `paths:` list.** It fails on a short
+  `CLAUDE.md` path and on a glob that matches no file. It also fails on a list
+  with no link, a link to a file with no list, and a pointed file that the
+  list misses.
 
 ## A number lives in a constant
 
@@ -155,19 +205,13 @@ request as its new `CLAUDE.md`.
    real mismatch.
 3. **Write the `CLAUDE.md` of the part.** Only rules that span several files go
    in. Retellings, bugs, history and filler go away. A rule of absence and a
-   rejected way stay, even when no code holds them.
+   rejected way stay, even when no code holds them. Most of its code in
+   another package? Add the `paths:` list and its link, as described above.
 4. **Move each one-place reason into a comment at its symbol.** Change comments
    only. Never change behaviour, names or imports in the same step.
 5. **Delete the old notes, and fix every pointer to them.** Look in code, in
    tests, in other `CLAUDE.md` files and in the root `AGENTS.md`.
 6. **Run the pointer check.** It reports nothing when you are done.
-
-## The old vault check
-
-`scripts/` still holds the check of an old vault of linked notes:
-`check-spec.mjs`, `fix-spec.mjs` and `check-lists.mjs`. A repo calls them while
-its old vault exists. Remove the call with the last old note. Every rule and
-config key is in `scripts/README.md`. Never write a new note for them.
 
 ## Anti-patterns
 
@@ -175,10 +219,13 @@ config key is in `scripts/README.md`. Never write a new note for them.
 - Two `CLAUDE.md` files that hold the same rule.
 - A chain of pointers: "see X", where X says "see Y".
 - A value written in a `CLAUDE.md` instead of a constant name.
-- A nested `AGENTS.md`. Claude Code does not load it.
+- A nested `AGENTS.md`. Beside a `CLAUDE.md`, Claude Code skips it.
 - A comment or a `CLAUDE.md` with an issue number, a bug or a plan.
 - A test comment that points at the code the test checks.
 - A pointer from code into the product spec.
+- A `CLAUDE.md` named by a short path, such as `lib/CLAUDE.md`.
+- Rules of a part that do not load where its code lives.
+- An `@` import in a `.claude/rules` file. It loads in every session.
 
 ## Example
 
